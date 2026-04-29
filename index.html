@@ -198,7 +198,9 @@ tr:hover td{background:var(--bg3);}
   </div>
   <div class="header-meta">
     <div class="badge-pill"><span class="dot dot-g" id="dotStatus"></span><span id="txtStatus">pronto</span></div>
-    <button class="btn btn-ghost btn-sm" id="btnSheets" onclick="toggleSheets()">🔗 Sheets</button>
+    <button class="btn btn-ghost btn-sm" id="btnSincronizar" onclick="sincronizarRapido()" title="Sincronizar com Google Sheets">⟳ Sincronizar</button>
+    <button class="btn btn-ghost btn-sm" onclick="limparCache()" title="Limpar cache local">🗑 Cache</button>
+    <button class="btn btn-ghost btn-sm" id="btnSheets" onclick="abrirPainelSheets()">🔗 Sheets</button>
     <button class="btn btn-ghost btn-sm" onclick="abrirConfig()">⚙ Configurar</button>
     <button class="btn btn-ghost btn-sm" onclick="exportarDados()">↓ Exportar</button>
   </div>
@@ -405,6 +407,73 @@ tr:hover td{background:var(--bg3);}
   <div id="tvConteudo"></div>
 </div>
 
+<!-- MODAL SHEETS RÁPIDO -->
+<div id="modalSheets" class="modal-overlay" style="display:none" onclick="if(event.target===this)fecharPainelSheets()">
+  <div class="modal" style="width:min(460px,95vw)">
+    <h3>🔗 Conexão com Google Sheets</h3>
+
+    <!-- STATUS ATUAL -->
+    <div id="sheetsStatusBox" style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:8px;background:var(--bg3);border:1px solid var(--border2);margin-bottom:18px">
+      <span id="sheetsStatusDot" class="dot dot-o" style="flex-shrink:0"></span>
+      <div>
+        <div id="sheetsStatusTxt" style="font-size:.82rem;font-weight:600">Não conectado</div>
+        <div id="sheetsStatusSub" style="font-size:.65rem;font-family:var(--mono);color:var(--ink3);margin-top:2px">Configure uma das opções abaixo</div>
+      </div>
+    </div>
+
+    <!-- MODO GAS (FÁCIL) -->
+    <div style="margin-bottom:20px;padding:14px;border-radius:10px;border:1px solid var(--accent);background:rgba(201,106,0,.07)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="background:var(--accent);color:#fff;font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:100px;font-family:var(--mono)">URL</span>
+        <span style="font-size:.72rem;font-family:var(--mono);color:var(--ink2);font-weight:600">Apps Script · Sem login Google</span>
+      </div>
+      <div class="fg" style="margin-bottom:10px">
+        <span class="fl">URL do Web App</span>
+        <input type="text" id="qGasUrl" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:.75rem;width:100%">
+      </div>
+      <details style="margin-bottom:10px">
+        <summary style="font-size:.65rem;font-family:var(--mono);color:var(--ink3);cursor:pointer;user-select:none">Como obter a URL ▾</summary>
+        <div style="font-size:.62rem;font-family:var(--mono);color:var(--ink3);line-height:1.7;padding:8px 10px;background:var(--bg3);border-radius:6px;margin-top:8px">
+          ① Abra sua planilha → <b style="color:var(--ink2)">Extensões → Apps Script</b><br>
+          ② Cole o código do arquivo <b style="color:var(--orange)">smk_indicadores.gs</b><br>
+          ③ Clique em <b style="color:var(--ink2)">Implantar → Nova implantação</b><br>
+          ④ Tipo: <b style="color:var(--ink2)">App da Web</b> · Acesso: <b style="color:var(--ink2)">Qualquer pessoa</b><br>
+          ⑤ Cole a URL gerada acima
+        </div>
+      </details>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-accent btn-sm" onclick="salvarEConectarGas()" style="flex:1">✓ Salvar e Conectar</button>
+        <button class="btn btn-ghost btn-sm" id="btnDesconectarGas" onclick="desconectarGas()" style="display:none">Desconectar</button>
+      </div>
+    </div>
+
+    <!-- MODO OAUTH (AVANÇADO) -->
+    <details style="margin-bottom:18px">
+      <summary style="font-size:.65rem;font-family:var(--mono);color:var(--ink3);cursor:pointer;user-select:none;padding:10px 12px;background:var(--bg3);border-radius:8px;border:1px solid var(--border2)">⚙ OAuth direto (avançado) ▾</summary>
+      <div style="padding:14px;border:1px solid var(--border2);border-top:none;border-radius:0 0 8px 8px;background:var(--surface)">
+        <div class="fg" style="margin-bottom:10px">
+          <span class="fl">Client ID OAuth 2.0</span>
+          <input type="text" id="cfgClientId" placeholder="xxxxx.apps.googleusercontent.com" style="font-size:.75rem">
+        </div>
+        <div class="fg" style="margin-bottom:10px">
+          <span class="fl">ID da Planilha</span>
+          <input type="text" id="cfgSheetId" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" style="font-size:.75rem">
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-accent btn-sm" onclick="salvarConfigSheets()">Salvar</button>
+          <button class="btn btn-ghost btn-sm" id="btnSheetsOAuth" onclick="toggleSheets()">🔗 Conectar via Google</button>
+        </div>
+      </div>
+    </details>
+
+    <!-- AÇÕES -->
+    <div style="display:flex;gap:8px;padding-top:14px;border-top:1px solid var(--border2)">
+      <button class="btn btn-green btn-sm" onclick="sincronizarRapido();fecharPainelSheets()" style="flex:1">⟳ Sincronizar Agora</button>
+      <button class="btn btn-ghost btn-sm" onclick="fecharPainelSheets()">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL CONFIG -->
 <div id="modalConfig" class="modal-overlay" style="display:none" onclick="if(event.target===this)fecharConfig()">
   <div class="modal">
@@ -420,43 +489,9 @@ tr:hover td{background:var(--bg3);}
       </div>
       <div class="vend-list" id="vendList"></div>
     </div>
-    <div style="margin-bottom:18px">
-      <div style="font-size:.6rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Google Sheets · Apps Script (Recomendado)</div>
-      <div style="display:flex;flex-direction:column;gap:10px">
-        <div class="fg">
-          <span class="fl">URL do Web App (Apps Script)</span>
-          <input type="text" id="cfgGasUrl" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:.75rem">
-        </div>
-        <div style="font-size:.62rem;font-family:var(--mono);color:var(--ink3);line-height:1.6;padding:8px 10px;background:var(--bg3);border-radius:6px;border-left:3px solid var(--accent)">
-          ① Abra sua planilha → <b style="color:var(--ink2)">Extensões → Apps Script</b><br>
-          ② Cole o código do arquivo <b style="color:var(--orange)">smk_indicadores.gs</b><br>
-          ③ Clique em <b style="color:var(--ink2)">Implantar → Nova implantação</b><br>
-          ④ Tipo: <b style="color:var(--ink2)">App da Web</b> · Acesso: <b style="color:var(--ink2)">Qualquer pessoa</b><br>
-          ⑤ Cole a URL gerada acima e salve
-        </div>
-        <button class="btn btn-accent btn-sm" style="align-self:flex-start" onclick="salvarConfigGas()">Salvar URL</button>
-      </div>
-    </div>
-    <div style="margin-bottom:18px">
-      <div style="font-size:.6rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Google Sheets · OAuth direto (avançado)</div>
-      <div style="display:flex;flex-direction:column;gap:10px">
-        <div class="fg">
-          <span class="fl">Client ID OAuth 2.0 (Google Cloud)</span>
-          <input type="text" id="cfgClientId" placeholder="xxxxx.apps.googleusercontent.com" style="font-size:.75rem">
-        </div>
-        <div class="fg">
-          <span class="fl">ID da Planilha (Spreadsheet ID)</span>
-          <input type="text" id="cfgSheetId" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" style="font-size:.75rem">
-        </div>
-        <div style="font-size:.62rem;font-family:var(--mono);color:var(--ink3);line-height:1.5;padding:8px 10px;background:var(--bg3);border-radius:6px;border-left:3px solid var(--border2)">
-          ① Crie um projeto no <b style="color:var(--ink2)">Google Cloud Console</b> e ative a <b style="color:var(--ink2)">Sheets API</b><br>
-          ② Crie credenciais OAuth 2.0 do tipo <b style="color:var(--ink2)">Aplicativo Web</b><br>
-          ③ Adicione a URL desta página em <b style="color:var(--ink2)">Origens autorizadas</b><br>
-          ④ A planilha deve ter uma aba chamada <b style="color:var(--ink2)">Dados</b>
-        </div>
-        <button class="btn btn-accent btn-sm" style="align-self:flex-start" onclick="salvarConfigSheets()">Salvar Configuração</button>
-      </div>
-    </div>
+    <div style="margin-bottom:18px;padding:10px 12px;background:var(--bg3);border-radius:8px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:.72rem;font-family:var(--mono);color:var(--ink3)">Conexão Google Sheets</div>
+      <button class="btn btn-accent btn-sm" onclick="fecharConfig();abrirPainelSheets()">🔗 Configurar Sheets</button>
     </div>
     <div style="margin-bottom:18px">
       <div style="font-size:.6rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Dados</div>
@@ -1429,10 +1464,6 @@ function salvarConfigSheets(){
 }
 
 function abrirConfig(){
-  // preenche campos de Sheets config ao abrir modal
-  document.getElementById('cfgClientId').value = localStorage.getItem('smk_gClientId')||'';
-  document.getElementById('cfgSheetId').value  = localStorage.getItem('smk_gSheetId')||'';
-  document.getElementById('cfgGasUrl').value   = localStorage.getItem('smk_gasUrl')||'';
   renderVendChips();
   document.getElementById('modalConfig').style.display='flex';
 }
@@ -1486,7 +1517,13 @@ function atualizarBtnSheets(){
   const btn = document.getElementById('btnSheets');
   const dot = document.getElementById('dotStatus');
   const txt = document.getElementById('txtStatus');
-  if(sheetsConnected){
+  const gasUrl = localStorage.getItem('smk_gasUrl')||'';
+  if(gasUrl){
+    btn.innerHTML = '🔗 Sheets ✓';
+    btn.className = 'btn btn-green btn-sm';
+    dot.className = 'dot dot-g';
+    if(txt.textContent==='pronto'||txt.textContent==='dados locais') txt.textContent = 'GAS conectado';
+  } else if(sheetsConnected){
     btn.innerHTML = '✕ Desconectar Sheets';
     btn.className = 'btn btn-danger btn-sm';
     dot.className = 'dot dot-g';
@@ -1581,7 +1618,94 @@ function salvarConfigGas(){
 }
 
 
+
+// ─────────────────────────────────────────────────────────────
+//  PAINEL SHEETS RÁPIDO
+// ─────────────────────────────────────────────────────────────
+function abrirPainelSheets(){
+  const gasUrl = localStorage.getItem('smk_gasUrl')||'';
+  document.getElementById('qGasUrl').value = gasUrl;
+  document.getElementById('cfgClientId').value = localStorage.getItem('smk_gClientId')||'';
+  document.getElementById('cfgSheetId').value  = localStorage.getItem('smk_gSheetId')||'';
+  atualizarStatusSheets();
+  document.getElementById('modalSheets').style.display='flex';
+}
+
+function fecharPainelSheets(){
+  document.getElementById('modalSheets').style.display='none';
+}
+
+function atualizarStatusSheets(){
+  const gasUrl = localStorage.getItem('smk_gasUrl')||'';
+  const dot = document.getElementById('sheetsStatusDot');
+  const txt = document.getElementById('sheetsStatusTxt');
+  const sub = document.getElementById('sheetsStatusSub');
+  const btnDesc = document.getElementById('btnDesconectarGas');
+  if(gasUrl){
+    dot.className='dot dot-g';
+    txt.textContent='Apps Script conectado';
+    sub.textContent=gasUrl.length>50?gasUrl.slice(0,50)+'…':gasUrl;
+    btnDesc.style.display='';
+  } else if(sheetsConnected){
+    dot.className='dot dot-g';
+    txt.textContent='Google Sheets OAuth ativo';
+    sub.textContent='Autenticado via Google';
+    btnDesc.style.display='none';
+  } else {
+    dot.className='dot dot-o';
+    txt.textContent='Não conectado';
+    sub.textContent='Configure uma das opções abaixo';
+    btnDesc.style.display='none';
+  }
+  // atualiza botão OAuth
+  const btnOauth = document.getElementById('btnSheetsOAuth');
+  if(btnOauth) btnOauth.textContent = sheetsConnected ? '✕ Desconectar' : '🔗 Conectar via Google';
+}
+
+function salvarEConectarGas(){
+  const url = document.getElementById('qGasUrl').value.trim();
+  if(!url){toast('Cole a URL do Web App primeiro.','err');return;}
+  localStorage.setItem('smk_gasUrl', url);
+  atualizarStatusSheets();
+  atualizarBtnSheets();
+  document.getElementById('dotStatus').className='dot dot-g';
+  document.getElementById('txtStatus').textContent='GAS configurado';
+  toast('Sheets conectado via Apps Script! ✓','ok');
+}
+
+function desconectarGas(){
+  if(!confirm('Desconectar do Apps Script?')) return;
+  localStorage.removeItem('smk_gasUrl');
+  document.getElementById('qGasUrl').value='';
+  atualizarStatusSheets();
+  atualizarBtnSheets();
+  document.getElementById('txtStatus').textContent='dados locais';
+  toast('Desconectado do Apps Script.','info');
+}
+
+function limparCache(){
+  if(!confirm('Limpar o cache local?\n\nIsso apaga os dados salvos no navegador. Os dados no Sheets não serão afetados.')) return;
+  allData = [];
+  salvarStorage();
+  popularSelects();
+  renderHist();
+  document.getElementById('txtStatus').textContent='cache limpo';
+  toast('Cache local limpo com sucesso.','ok');
+}
+
+async function sincronizarRapido(){
+  const gasUrl = localStorage.getItem('smk_gasUrl')||'';
+  if(!gasUrl && !sheetsConnected){
+    toast('Configure o Sheets primeiro via 🔗 Sheets.','err');
+    abrirPainelSheets();
+    return;
+  }
+  document.getElementById('txtStatus').textContent='sincronizando…';
+  await sincronizarNoSheets();
+}
+
 function fecharConfig(){document.getElementById('modalConfig').style.display='none';}
+
 
 function renderVendChips(){
   const el = document.getElementById('vendList');
@@ -1672,6 +1796,7 @@ function toggleFullscreen(){
   renderHist();
   document.getElementById('dotStatus').className='dot dot-g';
   document.getElementById('txtStatus').textContent='dados locais';
+  atualizarBtnSheets();
 
   // Demo: se não tem dados, perguntar
   if(!allData.length){
