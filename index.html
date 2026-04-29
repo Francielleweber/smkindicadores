@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SMK · Indicadores Mensais</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#ff7f00;--bg2:#ff7f00;--bg3:#2b2b2b;
+  --surface:#222222;--border:#21262d;--border2:#21262d;
+  --ink:#f0f6fc;--ink2:#f0f6fc;--ink3:#f0f6fc;
+  --green:#2ecc71;--green-dim:#4e6a4a;--green-light:#0fb600; 
+  --blue:#2d7dd2;--blue-dim:#1c3a5e;
+  --orange:#c96a00;--orange-dim:#ff8000;
+  --purple:#7b5ea7;--purple-dim:#2d1f52;
+  --red:#c0392b;--red-dim:#3d0f0e;
+  --yellow:#b8860b;--yellow-dim:#3d2e00;
+  --accent:#c96a00;--radius:10px;--radius-lg:14px;
+  --font:'Space Grotesk',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);min-height:100vh;line-height:1.5;}
+.wrap{max-width:1440px;margin:0 auto;padding:20px 24px;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.anim{animation:fadeUp .3s ease both;}
+button{font-family:var(--font);cursor:pointer;}
+
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;padding:16px 20px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);}
+.logo{display:flex;align-items:center;gap:14px;}
+.logo-mark{width:42px;height:42px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;color:#fff;flex-shrink:0;letter-spacing:-.02em;}
+.logo-title{font-size:1.1rem;font-weight:800;letter-spacing:-.03em;color:var(--ink);}
+.logo-sub{font-size:.67rem;color:var(--ink3);font-family:var(--mono);margin-top:2px;}
+.header-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.badge-pill{font-size:.67rem;font-family:var(--mono);padding:5px 12px;border-radius:100px;border:1px solid var(--border2);background:var(--bg3);display:flex;align-items:center;gap:6px;color:var(--ink2);}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.dot-g{background:var(--green-light);animation:pulse 2s infinite;}
+.dot-o{background:var(--ink3);}
+
+/* TABS */
+.tabs{display:flex;gap:3px;margin-bottom:22px;padding:4px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);width:fit-content;}
+.tab{padding:9px 22px;border:none;font-family:var(--font);font-size:.85rem;font-weight:600;cursor:pointer;border-radius:9px;transition:all .15s;background:transparent;color:var(--ink3);}
+.tab.active{background:var(--bg3);color:var(--ink);box-shadow:0 1px 8px rgba(0,0,0,.4);}
+.tab:hover:not(.active){color:var(--ink2);}
+
+/* BUTTONS */
+.btn{padding:8px 16px;border-radius:8px;font-weight:600;font-size:.83rem;border:none;transition:all .15s;cursor:pointer;}
+.btn:hover{opacity:.85;}
+.btn-accent{background:var(--accent);color:#fff;}
+.btn-green{background:var(--green);color:#fff;}
+.btn-ghost{background:transparent;color:var(--ink2);border:1px solid var(--border2);}
+.btn-sm{padding:5px 12px;font-size:.77rem;}
+.btn-danger{background:var(--red-dim);color:var(--red);border:1px solid var(--red-dim);}
+
+/* FORMS */
+input,select,textarea{font-family:var(--mono);font-size:.83rem;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--ink);outline:none;padding:8px 11px;transition:border-color .15s;}
+input:focus,select:focus{border-color:var(--blue);}
+select option{background:var(--bg3);}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fl{font-size:.6rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.07em;}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:18px;}
+.section-label{display:flex;align-items:center;gap:10px;margin:24px 0 16px;font-size:.6rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.09em;}
+.section-label::before,.section-label::after{content:'';flex:1;height:1px;background:var(--border2);}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px;}
+.kpi-card{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:14px;position:relative;overflow:hidden;}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent-color,var(--border2));}
+.kpi-icon{font-size:1.3rem;margin-bottom:6px;}
+.kpi-label{font-size:.55rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
+.kpi-value{font-size:1.1rem;font-weight:800;letter-spacing:-.03em;line-height:1.2;word-break:break-all;}
+.kpi-sub{font-size:.58rem;color:var(--ink3);margin-top:5px;font-family:var(--mono);}
+
+/* CHARTS */
+.chart-row{display:grid;gap:14px;margin-bottom:16px;}
+.chart-2-1{grid-template-columns:2fr 1fr;}
+.chart-1-1{grid-template-columns:1fr 1fr;}
+.chart-1-1-1{grid-template-columns:1fr 1fr 1fr;}
+.chart-box{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:18px;}
+.chart-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.chart-title{font-size:.62rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;}
+.chart-wrap{position:relative;}
+
+/* RANK */
+.rank-list{display:flex;flex-direction:column;gap:9px;}
+.rank-item{display:flex;align-items:center;gap:9px;}
+.rank-num{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.66rem;font-weight:700;font-family:var(--mono);flex-shrink:0;}
+.rank-name{flex:1;font-size:.83rem;font-weight:600;}
+.rank-bar-wrap{flex:2;height:6px;background:var(--bg3);border-radius:100px;overflow:hidden;}
+.rank-bar{height:100%;border-radius:100px;transition:width .8s cubic-bezier(.34,1.56,.64,1);}
+.rank-val{text-align:right;min-width:110px;}
+.rank-val-main{font-size:.76rem;font-family:var(--mono);font-weight:700;}
+.rank-val-sub{font-size:.6rem;color:var(--ink3);font-family:var(--mono);}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;border-radius:8px;}
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;padding:10px 13px;font-size:.58rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border2);background:var(--bg3);}
+td{padding:11px 13px;font-size:.8rem;border-bottom:1px solid var(--border);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--bg3);}
+.badge{display:inline-block;padding:2px 9px;border-radius:100px;font-size:.63rem;font-weight:700;font-family:var(--mono);}
+.badge-blue{background:var(--blue-dim);color:var(--blue);}
+.badge-orange{background:var(--orange-dim);color:var(--orange);}
+.badge-purple{background:var(--purple-dim);color:var(--purple);}
+.badge-green{background:var(--green-dim);color:var(--green-light);}
+.badge-red{background:var(--red-dim);color:var(--red);}
+
+/* FORM LANCAMENTO */
+.lanc-form{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:22px;margin-bottom:18px;}
+.lanc-form-title{font-size:.6rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.09em;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border2);}
+.form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px;}
+.form-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px;}
+.form-grid-auto{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:14px;}
+.preview-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border2);}
+.prev-item{background:var(--bg3);border-radius:8px;padding:11px 13px;border-left:3px solid var(--accent-c,var(--border2));}
+.prev-label{font-size:.57rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.prev-val{font-size:.95rem;font-weight:700;font-family:var(--mono);}
+
+/* MES SELETOR */
+.mes-select-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:18px;padding:14px 16px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);} 
+.mes-label{font-size:.67rem;font-family:var(--mono);color:var(--ink3);font-weight:600;}
+.mes-btn{padding:6px 14px;border-radius:7px;font-size:.73rem;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;}
+.mes-btn.on{border:1px solid var(--accent);background:var(--orange-dim);color:var(--orange);}
+.mes-btn.off{border:1px solid var(--border2);background:transparent;color:var(--ink3);}
+
+/* FILTRO BAR */
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:20px;padding:14px 16px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);}
+.filter-bar select,.filter-bar input{min-width:130px;font-size:.78rem;padding:7px 10px;}
+
+/* INADIMPLÊNCIA GAUGE */
+.inad-box{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px;}
+.gauge-wrap{position:relative;width:140px;height:80px;overflow:hidden;margin-bottom:8px;}
+.gauge-track{fill:none;stroke:var(--bg3);stroke-width:16;stroke-linecap:round;}
+.gauge-fill{fill:none;stroke-width:16;stroke-linecap:round;transition:stroke-dashoffset .8s ease;}
+.gauge-text{position:absolute;bottom:0;left:50%;transform:translateX(-50%);text-align:center;}
+
+/* TV PAINEL */
+.tv-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px;}
+.tv-kpi{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:20px 16px;text-align:center;}
+.tv-kpi-icon{font-size:1.7rem;margin-bottom:8px;}
+.tv-kpi-label{font-size:.58rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;}
+.tv-kpi-val{font-size:1.4rem;font-weight:800;letter-spacing:-.03em;}
+.tv-ranking{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3);border-radius:8px;margin-bottom:8px;}
+.tv-sc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;}
+.tv-sc{background:var(--bg3);border-radius:10px;padding:13px 15px;border-left:3px solid var(--c,var(--border2));}
+.tv-mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;}
+.tv-mini-box{text-align:center;background:var(--surface);border-radius:6px;padding:7px 5px;}
+.tv-mini-label{font-size:.52rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;}
+.tv-mini-val{font-size:1rem;font-weight:800;margin-top:2px;}
+
+/* VENDEDOR MANAGER */
+.vend-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.vend-chip{display:flex;align-items:center;gap:7px;padding:6px 12px;border-radius:100px;font-size:.78rem;font-weight:600;font-family:var(--mono);border:1px solid var(--border2);background:var(--bg3);}
+.vend-chip button{background:none;border:none;color:var(--ink3);cursor:pointer;font-size:.8rem;padding:0;line-height:1;}
+.vend-chip button:hover{color:var(--red);}
+
+/* TOAST */
+#toast{position:fixed;bottom:22px;right:22px;padding:11px 18px;border-radius:9px;font-size:.8rem;font-family:var(--mono);box-shadow:0 8px 28px rgba(0,0,0,.5);z-index:9999;display:none;color:#fff;transition:opacity .2s;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px);}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:28px;width:min(520px,95vw);max-height:90vh;overflow-y:auto;}
+.modal h3{font-size:1rem;font-weight:700;margin-bottom:18px;}
+
+/* FILIAL CORES */
+.filial-poa{color:#4d9de0;}
+.filial-ms{color:#3fb950;}
+.filial-pr{color:#e8820c;}
+
+@media(max-width:700px){
+  .chart-row{grid-template-columns:1fr!important;}
+  .kpi-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}
+  .form-grid-2,.form-grid-3,.form-grid-4{grid-template-columns:1fr;}
+  .tabs{flex-wrap:wrap;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div id="toast"></div>
+
+<header>
+  <div class="logo">
+      <img src="logo.png" alt="SMK" width="150px">
+    <div>
+      <div class="logo-title">Comercial · Performance</div>
+      <div class="logo-sub">análise de desempenho de vendedores</div>
+    </div>
+  </div>
+  <div class="header-meta">
+    <div class="badge-pill"><span class="dot dot-g" id="dotStatus"></span><span id="txtStatus">pronto</span></div>
+    <button class="btn btn-ghost btn-sm" id="btnSheets" onclick="toggleSheets()">🔗 Sheets</button>
+    <button class="btn btn-ghost btn-sm" onclick="abrirConfig()">⚙ Configurar</button>
+    <button class="btn btn-ghost btn-sm" onclick="exportarDados()">↓ Exportar</button>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" id="tab-lanc" onclick="setTab('lanc',this)">📝 Lançar</button>
+  <button class="tab" id="tab-dash" onclick="setTab('dash',this)">📊 Dashboard</button>
+  <button class="tab" id="tab-fin" onclick="setTab('fin',this)">💰 Financeiro</button>
+  <button class="tab" id="tab-tv" onclick="setTab('tv',this)">🖥️ Painel</button>
+</div>
+
+<!-- ═══════════════════════════════════════════ LANÇAMENTO ═══ -->
+<div id="pane-lanc">
+  <div class="lanc-form anim">
+    <div class="lanc-form-title">🗓 Novo Lançamento Mensal — Comercial</div>
+    <div class="form-grid-2">
+      <div class="form-grid-2" style="margin-bottom:0">
+        <div class="fg">
+          <span class="fl">Mês / Ano de Referência</span>
+          <input type="month" id="lancMes" onchange="onVendChange()" style="font-size:.9rem;padding:10px 13px;">
+        </div>
+        <div class="fg">
+          <span class="fl">Data do Lançamento</span>
+          <input type="date" id="lancData" style="font-size:.9rem;padding:10px 13px;">
+        </div>
+      </div>
+      <div class="form-grid-2" style="margin-bottom:0">
+        <div class="fg">
+          <span class="fl">Vendedor</span>
+          <select id="lancVendedor" onchange="onVendChange()" style="width:100%">
+            <option value="">— Selecione —</option>
+          </select>
+        </div>
+        <div class="fg">
+          <span class="fl">Filial</span>
+          <select id="lancFilial" style="width:100%">
+            <option value="">— Selecione —</option>
+            <option value="Porto Alegre">Porto Alegre</option>
+            <option value="Mato Grosso do Sul">Mato Grosso do Sul</option>
+            <option value="Paraná">Paraná</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:0">Contratos</div>
+    <div class="form-grid-2">
+      <div class="fg">
+        <span class="fl">Qtde. de Contratos Emitidos</span>
+        <input type="number" min="0" id="lancContr" placeholder="0" oninput="atualizarPreview()">
+      </div>
+      <div class="fg">
+        <span class="fl">Valor Total dos Contratos (R$)</span>
+        <input type="text" id="lancValorContr" placeholder="0,00" oninput="this.value=maskV(this.value);atualizarPreview()">
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:0">Financeiro do Mês</div>
+    <div class="form-grid-4">
+      <div class="fg">
+        <span class="fl">Faturamento (R$)</span>
+        <input type="text" id="lancFat" placeholder="0,00" oninput="this.value=maskV(this.value);atualizarPreview()">
+      </div>
+      <div class="fg">
+        <span class="fl">Recebimentos (R$)</span>
+        <input type="text" id="lancRec" placeholder="0,00" oninput="this.value=maskV(this.value);atualizarPreview()">
+      </div>
+      <div class="fg">
+        <span class="fl">Vencimentos (R$)</span>
+        <input type="text" id="lancVenc" placeholder="0,00" oninput="this.value=maskV(this.value);atualizarPreview()">
+      </div>
+      <div class="fg">
+        <span class="fl">Entradas do mês (R$)</span>
+        <input type="text" id="lancPag" placeholder="0,00" oninput="this.value=maskV(this.value);atualizarPreview()">
+      </div>
+    </div>
+
+    <div id="lancPreview" class="preview-bar" style="display:none"></div>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:30px">
+    <button class="btn btn-green" id="btnSalvar" onclick="salvarLancamento()">✓ Salvar Lançamento</button>
+    <button class="btn btn-ghost" onclick="limparForm()">Limpar</button>
+    <span id="lancMsg" style="font-size:.73rem;font-family:var(--mono);color:var(--ink3)"></span>
+  </div>
+
+  <!-- Histórico de lançamentos -->
+  <div class="card anim">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <span class="chart-title">Histórico de Lançamentos</span>
+      <span id="histCount" style="font-size:.67rem;font-family:var(--mono);color:var(--ink3)">0 registros</span>
+    </div>
+    <div class="filter-bar" style="margin-bottom:14px;padding:10px 14px;">
+      <div class="fg">
+        <span class="fl">Filtrar por Filial</span>
+        <select id="hFilial" onchange="renderHist()">
+          <option value="">Todas</option>
+          <option value="Porto Alegre">Porto Alegre</option>
+          <option value="Mato Grosso do Sul">Mato Grosso do Sul</option>
+          <option value="Paraná">Paraná</option>
+        </select>
+      </div>
+      <div class="fg">
+        <span class="fl">Filtrar por Vendedor</span>
+        <select id="hVend" onchange="renderHist()">
+          <option value="">Todos</option>
+        </select>
+      </div>
+      <div class="fg">
+        <span class="fl">Mês</span>
+        <select id="hMes" onchange="renderHist()">
+          <option value="">Todos</option>
+        </select>
+      </div>
+    </div>
+    <div class="tbl-wrap"><table>
+      <thead><tr>
+        <th>Mês/Ano</th><th>Vendedor</th><th>Filial</th>
+        <th>Contratos</th><th>Valor Contratos</th><th>Faturamento</th>
+        <th>Recebimentos</th><th>Vencimentos</th><th>Entradas do mês</th><th>Inadimplência</th><th>Atualizado em</th><th></th>
+      </tr></thead>
+      <tbody id="histTbody"></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ DASHBOARD ═══ -->
+<div id="pane-dash" style="display:none">
+  <div class="filter-bar">
+    <div class="fg">
+      <span class="fl">Filial</span>
+      <select id="dFilial" onchange="renderDash()">
+        <option value="">Todas as filiais</option>
+        <option value="Porto Alegre">Porto Alegre</option>
+        <option value="Mato Grosso do Sul">Mato Grosso do Sul</option>
+        <option value="Paraná">Paraná</option>
+      </select>
+    </div>
+    <div class="fg">
+      <span class="fl">Vendedor</span>
+      <select id="dVend" onchange="renderDash()">
+        <option value="">Todos</option>
+      </select>
+    </div>
+    <div class="fg">
+      <span class="fl">Período</span>
+      <select id="dPeriodo" onchange="renderDash()">
+        <option value="">Todo o histórico</option>
+      </select>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('dPeriodo').value='';document.getElementById('dFilial').value='';document.getElementById('dVend').value='';renderDash()">Limpar Filtros</button>
+  </div>
+  <div id="dashConteudo"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════ FINANCEIRO ═══ -->
+<div id="pane-fin" style="display:none">
+  <div class="filter-bar">
+    <div class="fg">
+      <span class="fl">Filial</span>
+      <select id="fFilial" onchange="renderFin()">
+        <option value="">Todas</option>
+        <option value="Porto Alegre">Porto Alegre</option>
+        <option value="Mato Grosso do Sul">Mato Grosso do Sul</option>
+        <option value="Paraná">Paraná</option>
+      </select>
+    </div>
+    <div class="fg">
+      <span class="fl">Vendedor</span>
+      <select id="fVend" onchange="renderFin()">
+        <option value="">Todos</option>
+      </select>
+    </div>
+    <div class="fg">
+      <span class="fl">Mês</span>
+      <select id="fMes" onchange="renderFin()">
+        <option value="">Todos</option>
+      </select>
+    </div>
+  </div>
+  <div id="finConteudo"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════ TV PAINEL ═══ -->
+<div id="pane-tv" style="display:none">
+  <div class="filter-bar" style="margin-bottom:16px">
+    <div class="fg">
+      <span class="fl">Filial</span>
+      <select id="tvFilial" onchange="renderTV()">
+        <option value="">Todas</option>
+        <option value="Porto Alegre">Porto Alegre</option>
+        <option value="Mato Grosso do Sul">Mato Grosso do Sul</option>
+        <option value="Paraná">Paraná</option>
+      </select>
+    </div>
+    <div class="fg">
+      <span class="fl">Mês de Referência</span>
+      <select id="tvMes" onchange="renderTV()">
+        <option value="">Último Mês</option>
+      </select>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="toggleFullscreen()">⛶ Tela Cheia</button>
+  </div>
+  <div id="tvConteudo"></div>
+</div>
+
+<!-- MODAL CONFIG -->
+<div id="modalConfig" class="modal-overlay" style="display:none" onclick="if(event.target===this)fecharConfig()">
+  <div class="modal">
+    <h3>⚙ Configurações</h3>
+    <div style="margin-bottom:18px">
+      <div style="font-size:.6rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Gerenciar Vendedores</div>
+      <div class="fg" style="margin-bottom:10px">
+        <span class="fl">Adicionar Vendedor</span>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="novoVendNome" placeholder="Nome do vendedor" style="flex:1">
+          <button class="btn btn-accent btn-sm" onclick="adicionarVendedor()">Adicionar</button>
+        </div>
+      </div>
+      <div class="vend-list" id="vendList"></div>
+    </div>
+    <div style="margin-bottom:18px">
+      <div style="font-size:.6rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Google Sheets · Apps Script (Recomendado)</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="fg">
+          <span class="fl">URL do Web App (Apps Script)</span>
+          <input type="text" id="cfgGasUrl" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:.75rem">
+        </div>
+        <div style="font-size:.62rem;font-family:var(--mono);color:var(--ink3);line-height:1.6;padding:8px 10px;background:var(--bg3);border-radius:6px;border-left:3px solid var(--accent)">
+          ① Abra sua planilha → <b style="color:var(--ink2)">Extensões → Apps Script</b><br>
+          ② Cole o código do arquivo <b style="color:var(--orange)">smk_indicadores.gs</b><br>
+          ③ Clique em <b style="color:var(--ink2)">Implantar → Nova implantação</b><br>
+          ④ Tipo: <b style="color:var(--ink2)">App da Web</b> · Acesso: <b style="color:var(--ink2)">Qualquer pessoa</b><br>
+          ⑤ Cole a URL gerada acima e salve
+        </div>
+        <button class="btn btn-accent btn-sm" style="align-self:flex-start" onclick="salvarConfigGas()">Salvar URL</button>
+      </div>
+    </div>
+    <div style="margin-bottom:18px">
+      <div style="font-size:.6rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Google Sheets · OAuth direto (avançado)</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="fg">
+          <span class="fl">Client ID OAuth 2.0 (Google Cloud)</span>
+          <input type="text" id="cfgClientId" placeholder="xxxxx.apps.googleusercontent.com" style="font-size:.75rem">
+        </div>
+        <div class="fg">
+          <span class="fl">ID da Planilha (Spreadsheet ID)</span>
+          <input type="text" id="cfgSheetId" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" style="font-size:.75rem">
+        </div>
+        <div style="font-size:.62rem;font-family:var(--mono);color:var(--ink3);line-height:1.5;padding:8px 10px;background:var(--bg3);border-radius:6px;border-left:3px solid var(--border2)">
+          ① Crie um projeto no <b style="color:var(--ink2)">Google Cloud Console</b> e ative a <b style="color:var(--ink2)">Sheets API</b><br>
+          ② Crie credenciais OAuth 2.0 do tipo <b style="color:var(--ink2)">Aplicativo Web</b><br>
+          ③ Adicione a URL desta página em <b style="color:var(--ink2)">Origens autorizadas</b><br>
+          ④ A planilha deve ter uma aba chamada <b style="color:var(--ink2)">Dados</b>
+        </div>
+        <button class="btn btn-accent btn-sm" style="align-self:flex-start" onclick="salvarConfigSheets()">Salvar Configuração</button>
+      </div>
+    </div>
+    </div>
+    <div style="margin-bottom:18px">
+      <div style="font-size:.6rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Dados</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="importarDados()">↑ Importar JSON</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
+        <button class="btn btn-danger btn-sm" onclick="confirmarLimpar()">🗑 Limpar Todos os Dados</button>
+      </div>
+    </div>
+    <button class="btn btn-ghost" onclick="fecharConfig()">Fechar</button>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+//  CONSTANTS & STATE
+// ─────────────────────────────────────────────────────────────
+const FILIAIS = ['Porto Alegre','Mato Grosso do Sul','Paraná'];
+const FILIAL_COLORS = ['#4d9de0','#3fb950','#e8820c'];
+const COLORS = ['#4d9de0','#3fb950','#e8820c','#a371d8','#d4a017','#6ab0e8','#52c96a','#f09a3a','#bc8cda','#e0b830'];
+const GC = 'rgba(255,255,255,.05)';
+const MESES_BR = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+let allData = [];
+let VENDEDORES = [];
+let chartMode = 'barra';
+
+// ─────────────────────────────────────────────────────────────
+//  STORAGE
+// ─────────────────────────────────────────────────────────────
+function salvarStorage(){
+  try{
+    localStorage.setItem('smk_data', JSON.stringify(allData));
+    localStorage.setItem('smk_vends', JSON.stringify(VENDEDORES));
+  }catch(e){toast('Erro ao salvar dados localmente.','err');}
+}
+function carregarStorage(){
+  try{
+    const d = localStorage.getItem('smk_data');
+    const v = localStorage.getItem('smk_vends');
+    if(d) allData = JSON.parse(d);
+    if(v) VENDEDORES = JSON.parse(v);
+    else VENDEDORES = ['Igor','Marcelo', 'Dalgiza'];
+  }catch(e){
+    allData = [];
+    VENDEDORES = ['Igor','Marcelo', 'Dalgiza'];
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+//  UTILS
+// ─────────────────────────────────────────────────────────────
+function maskV(v){
+  v=v.replace(/[^\d]/g,'');if(!v)return'';
+  v=v.padStart(3,'0');
+  const c=v.slice(-2);let u=v.slice(0,-2).replace(/^0+/,'')||'0';
+  u=u.replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+  return u+','+c;
+}
+function parseBR(s){if(!s)return 0;return parseFloat(s.replace(/\./g,'').replace(',','.'))||0;}
+function fmtR(v){if(v===undefined||v===null||v===0)return'—';return'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtRForce(v){return'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtBR(v){return Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function mesLabel(ym){
+  if(!ym)return'—';
+  const[y,m]=ym.split('-');
+  return MESES_BR[+m-1]+'/'+y;
+}
+function mesSort(a,b){return a.mes>b.mes?1:-1;}
+function getMesAtual(){const h=new Date();return h.getFullYear()+'-'+String(h.getMonth()+1).padStart(2,'0');}
+function getDataHoje(){const h=new Date();return h.getFullYear()+'-'+String(h.getMonth()+1).padStart(2,'0')+'-'+String(h.getDate()).padStart(2,'0');}
+function formatDataBR(iso){if(!iso)return'—';const[y,m,d]=iso.slice(0,10).split('-');return`${d}/${m}/${y}`;}
+
+function toast(txt,tipo='info'){
+  const el=document.getElementById('toast');
+  el.textContent=txt;
+  el.style.background=tipo==='ok'?'#238636':tipo==='err'?'#f85149':'#21262d';
+  el.style.border=tipo==='info'?'1px solid #30363d':'none';
+  el.style.display='block';
+  clearTimeout(el._t);el._t=setTimeout(()=>el.style.display='none',3000);
+}
+function destroyChart(id){
+  const el=document.getElementById(id);if(!el)return;
+  const ex=Chart.getChart(el);if(ex)ex.destroy();
+}
+function kpiCard(icon,label,val,sub,color='var(--ink)',accentColor=''){
+  return`<div class="kpi-card" style="--accent-color:${accentColor||color}">
+    <div class="kpi-icon">${icon}</div>
+    <div class="kpi-label">${label}</div>
+    <div class="kpi-value" style="color:${color}">${val}</div>
+    ${sub?`<div class="kpi-sub">${sub}</div>`:''}
+  </div>`;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  TABS
+// ─────────────────────────────────────────────────────────────
+const TABS = ['lanc','dash','fin','tv'];
+function setTab(id,btn){
+  TABS.forEach(t=>{document.getElementById('pane-'+t).style.display=t===id?'block':'none';});
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(id==='dash')setTimeout(renderDash,50);
+  if(id==='fin')setTimeout(renderFin,50);
+  if(id==='tv')setTimeout(renderTV,50);
+}
+
+// ─────────────────────────────────────────────────────────────
+//  POPULATE SELECTS
+// ─────────────────────────────────────────────────────────────
+function popularSelects(){
+  // vendedores nos forms
+  const opts = '<option value="">— Selecione —</option>'+VENDEDORES.map(v=>`<option value="${v}">${v}</option>`).join('');
+  document.getElementById('lancVendedor').innerHTML = opts;
+
+  // vendedores nos filtros
+  const optsAll = '<option value="">Todos</option>'+VENDEDORES.map(v=>`<option value="${v}">${v}</option>`).join('');
+  ['hVend','dVend','fVend'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){const curr=el.value;el.innerHTML=optsAll;if(curr)el.value=curr;}
+  });
+
+  // meses disponíveis
+  const mesesSet = new Set(allData.map(r=>r.mes));
+  const mesesArr = [...mesesSet].sort().reverse();
+  const mesopts = '<option value="">Todos</option>'+mesesArr.map(m=>`<option value="${m}">${mesLabel(m)}</option>`).join('');
+  ['hMes','fMes'].forEach(id=>{
+    const el=document.getElementById(id);if(el){const curr=el.value;el.innerHTML=mesopts;if(curr)el.value=curr;}
+  });
+  const mesoptsUlt = '<option value="">Último Mês</option>'+mesesArr.map(m=>`<option value="${m}">${mesLabel(m)}</option>`).join('');
+  const tvMes=document.getElementById('tvMes');if(tvMes){const c=tvMes.value;tvMes.innerHTML=mesoptsUlt;if(c)tvMes.value=c;}
+
+  // período no dash
+  const dPer=document.getElementById('dPeriodo');
+  if(dPer){
+    const c=dPer.value;
+    dPer.innerHTML='<option value="">Todo o histórico</option>'+mesesArr.map(m=>`<option value="${m}">${mesLabel(m)}</option>`).join('');
+    if(c)dPer.value=c;
+  }
+
+  // chips de vendedores no modal
+  renderVendChips();
+}
+
+// ─────────────────────────────────────────────────────────────
+//  FORM LANÇAMENTO
+// ─────────────────────────────────────────────────────────────
+function onVendChange(){
+  const vend = document.getElementById('lancVendedor').value;
+  const mes = document.getElementById('lancMes').value;
+  if(!vend||!mes) return;
+  // Pega o registro mais recente para este vendedor+mês
+  const registros = allData.filter(r=>r.vendedor===vend&&r.mes===mes);
+  const exist = registros.length ? registros.reduce((a,b)=>a.savedAt>b.savedAt?a:b) : null;
+  if(exist){
+    document.getElementById('lancFilial').value = exist.filial||'';
+    document.getElementById('lancContr').value = exist.contratos||'';
+    document.getElementById('lancValorContr').value = exist.valorContratos>0?fmtBR(exist.valorContratos):'';
+    document.getElementById('lancFat').value = exist.faturamento>0?fmtBR(exist.faturamento):'';
+    document.getElementById('lancRec').value = exist.recebimentos>0?fmtBR(exist.recebimentos):'';
+    document.getElementById('lancVenc').value = exist.vencimentos>0?fmtBR(exist.vencimentos):'';
+    document.getElementById('lancPag').value = exist.entradas>0?fmtBR(exist.entradas):'';
+    const dataExist = exist.dataLancamento || (exist.savedAt ? exist.savedAt.slice(0,10) : getDataHoje());
+    document.getElementById('lancData').value = dataExist;
+    document.getElementById('lancMsg').textContent = `📝 ${registros.length} lançamento(s) neste mês — os valores abaixo são os mais recentes`;
+    atualizarPreview();
+  } else {
+    document.getElementById('lancMsg').textContent = '';
+  }
+}
+
+function atualizarPreview(){
+  const contr = parseInt(document.getElementById('lancContr').value)||0;
+  const valContr = parseBR(document.getElementById('lancValorContr').value);
+  const fat = parseBR(document.getElementById('lancFat').value);
+  const rec = parseBR(document.getElementById('lancRec').value);
+  const venc = parseBR(document.getElementById('lancVenc').value);
+  const pag = parseBR(document.getElementById('lancPag').value);
+  const inad = venc>0?((venc-pag)/venc*100):null;
+  const el = document.getElementById('lancPreview');
+  if(!contr&&!valContr&&!fat&&!rec&&!venc&&!pag){el.style.display='none';return;}
+  el.style.display='grid';
+  el.innerHTML=[
+    {l:'Contratos',v:contr||'—',c:'var(--orange)'},
+    {l:'Valor Contratos',v:valContr>0?fmtR(valContr):'—',c:'var(--blue)'},
+    {l:'Faturamento',v:fat>0?fmtR(fat):'—',c:'var(--blue)'},
+    {l:'Recebimentos',v:rec>0?fmtR(rec):'—',c:'var(--green-light)'},
+    {l:'Vencimentos',v:venc>0?fmtR(venc):'—',c:'var(--ink)'},
+    {l:'Entradas',v:pag>0?fmtR(pag):'—',c:'var(--green-light)'},
+    {l:'Inadimplência',v:inad!==null?inad.toFixed(1)+'%':'—',c:inad===null?'var(--ink)':inad<=5?'var(--green-light)':inad<=15?'var(--yellow)':'var(--red)'},
+  ].map(i=>`<div class="prev-item" style="--accent-c:${i.c}"><div class="prev-label">${i.l}</div><div class="prev-val" style="color:${i.c}">${i.v}</div></div>`).join('');
+}
+
+function salvarLancamento(){
+  const mes = document.getElementById('lancMes').value;
+  const vendedor = document.getElementById('lancVendedor').value;
+  const filial = document.getElementById('lancFilial').value;
+  const dataLancamento = document.getElementById('lancData').value || getDataHoje();
+  if(!mes){toast('Selecione o mês de referência.','err');return;}
+  if(!vendedor){toast('Selecione o vendedor.','err');return;}
+  if(!filial){toast('Selecione a filial.','err');return;}
+
+  const obj = {
+    mes, vendedor, filial,
+    contratos: parseInt(document.getElementById('lancContr').value)||0,
+    valorContratos: parseBR(document.getElementById('lancValorContr').value),
+    faturamento: parseBR(document.getElementById('lancFat').value),
+    recebimentos: parseBR(document.getElementById('lancRec').value),
+    vencimentos: parseBR(document.getElementById('lancVenc').value),
+    entradas: parseBR(document.getElementById('lancPag').value),
+    dataLancamento,
+    savedAt: new Date().toISOString()
+  };
+
+  const isUpdate = allData.some(r=>r.mes===mes&&r.vendedor===vendedor);
+  obj.id = Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7);
+  allData.push(obj);
+
+  salvarStorage();
+  popularSelects();
+  renderHist();
+  toast(isUpdate ? '🔄 Valores atualizados com sucesso!' : '✓ Lançamento salvo com sucesso!', 'ok');
+  document.getElementById('lancMsg').textContent = (isUpdate?'🔄 Atualizado':'✓ Salvo')+' em '+new Date().toLocaleTimeString('pt-BR')+' · '+formatDataBR(dataLancamento);
+  atualizarPreview();
+  sincronizarNoSheets();
+}
+
+function limparForm(){
+  ['lancContr','lancValorContr','lancFat','lancRec','lancVenc','lancPag'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  document.getElementById('lancData').value = getDataHoje();
+  document.getElementById('lancPreview').style.display='none';
+  document.getElementById('lancMsg').textContent='';
+}
+
+// ─────────────────────────────────────────────────────────────
+//  HISTÓRICO
+// ─────────────────────────────────────────────────────────────
+function renderHist(){
+  const fFilial = document.getElementById('hFilial').value;
+  const fVend = document.getElementById('hVend').value;
+  const fMes = document.getElementById('hMes').value;
+  let data = [...allData];
+  if(fFilial) data = data.filter(r=>r.filial===fFilial);
+  if(fVend) data = data.filter(r=>r.vendedor===fVend);
+  if(fMes) data = data.filter(r=>r.mes===fMes);
+  // Ordena: mais recente primeiro (por savedAt)
+  data.sort((a,b)=> b.savedAt > a.savedAt ? 1 : b.savedAt < a.savedAt ? -1 : 0);
+
+  // Identifica quais são os registros "atual" (mais recente por vendedor+mês)
+  const latestIds = new Set(getLatestData(allData).map(r=>r.id||r.savedAt));
+
+  document.getElementById('histCount').textContent = data.length+' registros';
+  const tbody = document.getElementById('histTbody');
+  if(!data.length){
+    tbody.innerHTML='<tr><td colspan="12" style="text-align:center;color:var(--ink3);padding:28px">Nenhum lançamento encontrado</td></tr>';
+    return;
+  }
+  const fCores = {'Porto Alegre':'badge-blue','Mato Grosso do Sul':'badge-green','Paraná':'badge-orange'};
+  tbody.innerHTML = data.map(r=>{
+    const inad = r.vencimentos>0?((r.vencimentos-r.entradas)/r.vencimentos*100):null;
+    const ic = inad===null?'var(--ink3)':inad<=5?'var(--green-light)':inad<=15?'var(--yellow)':'var(--red)';
+    const ibg = inad===null?'transparent':inad<=5?'var(--green-dim)':inad<=15?'var(--yellow-dim)':'var(--red-dim)';
+    const fcls = fCores[r.filial]||'badge-blue';
+    const rid = r.id || r.savedAt;
+    const isAtual = latestIds.has(rid);
+    const rowStyle = isAtual ? '' : 'opacity:.55';
+    const tagAtual = isAtual
+      ? `<span style="padding:2px 7px;border-radius:5px;font-size:.6rem;font-weight:700;font-family:var(--mono);background:var(--green-dim);color:var(--green-light)">ATUAL</span>`
+      : `<span style="padding:2px 7px;border-radius:5px;font-size:.6rem;font-weight:700;font-family:var(--mono);background:var(--bg3);color:var(--ink3)">HIST.</span>`;
+    return`<tr style="${rowStyle}">
+      <td style="font-family:var(--mono);font-weight:600">${mesLabel(r.mes)}</td>
+      <td><span class="badge badge-purple">${r.vendedor}</span></td>
+      <td><span class="badge ${fcls}">${r.filial}</span></td>
+      <td style="font-family:var(--mono);color:var(--orange);font-weight:700">${r.contratos||'—'}</td>
+      <td style="font-family:var(--mono);color:var(--blue)">${r.valorContratos>0?fmtR(r.valorContratos):'—'}</td>
+      <td style="font-family:var(--mono);color:var(--blue);font-weight:700">${r.faturamento>0?fmtR(r.faturamento):'—'}</td>
+      <td style="font-family:var(--mono);color:var(--green-light)">${r.recebimentos>0?fmtR(r.recebimentos):'—'}</td>
+      <td style="font-family:var(--mono)">${r.vencimentos>0?fmtR(r.vencimentos):'—'}</td>
+      <td style="font-family:var(--mono);color:var(--green-light)">${r.entradas>0?fmtR(r.entradas):'—'}</td>
+      <td><span style="padding:3px 9px;border-radius:6px;font-size:.67rem;font-weight:700;font-family:var(--mono);color:${ic};background:${ibg}">${inad!==null?inad.toFixed(1)+'%':'—'}</span></td>
+      <td style="font-family:var(--mono);font-size:.72rem;color:var(--ink3)">${formatDataBR(r.dataLancamento||r.savedAt)}</td>
+      <td>${tagAtual}</td>
+      <td><button class="btn btn-ghost btn-sm" style="padding:3px 9px;font-size:.67rem" onclick="excluirLanc('${rid}')">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function excluirLanc(rid){
+  if(!confirm(`Excluir este lançamento?`)) return;
+  allData = allData.filter(r=>(r.id||r.savedAt) !== rid);
+  salvarStorage();
+  popularSelects();
+  renderHist();
+  toast('Lançamento excluído.','ok');
+}
+
+// ─────────────────────────────────────────────────────────────
+//  LATEST DATA — retorna apenas o registro mais recente por vendedor+mês
+// ─────────────────────────────────────────────────────────────
+function getLatestData(data){
+  const map = new Map();
+  data.forEach(r=>{
+    const key = r.mes+'|'+r.vendedor;
+    const prev = map.get(key);
+    if(!prev || r.savedAt > prev.savedAt) map.set(key, r);
+  });
+  return [...map.values()];
+}
+
+// ─────────────────────────────────────────────────────────────
+//  FILTROS DASHBOARD
+// ─────────────────────────────────────────────────────────────
+function filterDash(){
+  const fFilial = document.getElementById('dFilial').value;
+  const fVend = document.getElementById('dVend').value;
+  const fPer = document.getElementById('dPeriodo').value;
+  let d = getLatestData(allData);
+  if(fFilial) d = d.filter(r=>r.filial===fFilial);
+  if(fVend) d = d.filter(r=>r.vendedor===fVend);
+  if(fPer) d = d.filter(r=>r.mes===fPer);
+  return d;
+}
+function filterFin2(){
+  const fFilial = document.getElementById('fFilial').value;
+  const fVend = document.getElementById('fVend').value;
+  const fMes = document.getElementById('fMes').value;
+  let d = getLatestData(allData);
+  if(fFilial) d = d.filter(r=>r.filial===fFilial);
+  if(fVend) d = d.filter(r=>r.vendedor===fVend);
+  if(fMes) d = d.filter(r=>r.mes===fMes);
+  return d;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  DASHBOARD
+// ─────────────────────────────────────────────────────────────
+function renderDash(){
+  const data = filterDash();
+  const el = document.getElementById('dashConteudo');
+  if(!allData.length){
+    el.innerHTML=`<div style="text-align:center;padding:60px 20px;color:var(--ink3)"><div style="font-size:3rem;margin-bottom:12px">📝</div><p style="font-size:1rem;font-weight:600">Nenhum dado ainda</p><p style="font-size:.82rem;margin-top:6px">Comece lançando os dados na aba "Lançar"</p></div>`;
+    return;
+  }
+  if(!data.length){
+    el.innerHTML=`<div style="text-align:center;padding:60px 20px;color:var(--ink3)"><div style="font-size:3rem;margin-bottom:12px">🔍</div><p>Nenhum dado para os filtros selecionados.</p></div>`;
+    return;
+  }
+
+  // Agregar totais
+  const totContr = data.reduce((s,r)=>s+(r.contratos||0),0);
+  const totValContr = data.reduce((s,r)=>s+(r.valorContratos||0),0);
+  const totFat = data.reduce((s,r)=>s+(r.faturamento||0),0);
+  const totRec = data.reduce((s,r)=>s+(r.recebimentos||0),0);
+  const totVenc = data.reduce((s,r)=>s+(r.vencimentos||0),0);
+  const totPag = data.reduce((s,r)=>s+(r.entradas||0),0);
+  const inad = totVenc>0?((totVenc-totPag)/totVenc*100):null;
+  const efic = totVenc>0?(totPag/totVenc*100):null;
+
+  // Meses únicos ordenados
+  const meses = [...new Set(data.map(r=>r.mes))].sort();
+
+  // Ranking vendedores (soma do período)
+  const rankMap = {};
+  data.forEach(r=>{
+    if(!rankMap[r.vendedor]) rankMap[r.vendedor]={nome:r.vendedor,contratos:0,valorContratos:0,faturamento:0,filial:r.filial};
+    rankMap[r.vendedor].contratos += r.contratos||0;
+    rankMap[r.vendedor].valorContratos += r.valorContratos||0;
+    rankMap[r.vendedor].faturamento += r.faturamento||0;
+  });
+  const ranking = Object.values(rankMap).sort((a,b)=>b.valorContratos-a.valorContratos);
+  const maxRank = ranking[0]?.valorContratos||1;
+
+  // Ranking filiais
+  const filialMap = {};
+  FILIAIS.forEach(f=>filialMap[f]={filial:f,contratos:0,faturamento:0});
+  data.forEach(r=>{
+    if(filialMap[r.filial]){filialMap[r.filial].contratos+=(r.contratos||0);filialMap[r.filial].faturamento+=(r.faturamento||0);}
+  });
+  const rankFiliais = Object.values(filialMap).sort((a,b)=>b.faturamento-a.faturamento);
+
+  const inadCor = inad===null?'var(--ink)':inad<=5?'var(--green-light)':inad<=15?'var(--yellow)':'var(--red)';
+
+  el.innerHTML=`
+    <div class="section-label">Resumo do Período</div>
+    <div class="kpi-grid anim">
+      ${kpiCard('📋','Total Contratos',totContr.toLocaleString('pt-BR'),meses.length+' mês(es) | '+data.length+' lançamentos','var(--orange)','var(--orange)')}
+      ${kpiCard('💼','Valor dos Contratos',totValContr>0?fmtR(totValContr):'—','total no período','var(--blue)','var(--blue)')}
+      ${kpiCard('📊','Faturamento',totFat>0?fmtR(totFat):'—','total no período','var(--blue)','var(--blue)')}
+      ${kpiCard('💰','Recebimentos',totRec>0?fmtR(totRec):'—','total recebido','var(--green-light)','var(--green)')}
+      ${kpiCard('⏰','Vencimentos',totVenc>0?fmtR(totVenc):'—','total a vencer/vencido','var(--ink2)','var(--border2)')}
+      ${kpiCard('✅','Entradas do mês',totPag>0?fmtR(totPag):'—','entradas do mês','var(--green-light)','var(--green)')}
+      ${kpiCard('⚠️','Inadimplência',inad!==null?inad.toFixed(1)+'%':'—','(vencimentos − entradas) ÷ vencimentos',inadCor,inadCor)}
+      ${kpiCard('⚡','Eficiência',efic!==null?efic.toFixed(1)+'%':'—','entradas ÷ vencimentos','var(--purple)','var(--purple)')}
+    </div>
+
+    <div class="chart-row chart-2-1 anim">
+      <div class="chart-box">
+        <div class="chart-head">
+          <span class="chart-title">Evolução Mensal — Valor de Contratos por Vendedor</span>
+          <div style="display:flex;gap:4px">
+            <button style="padding:4px 10px;border-radius:6px;font-size:.7rem;font-weight:600;cursor:pointer;border:1px solid var(--border2);font-family:var(--font);transition:all .15s;background:${chartMode==='barra'?'var(--bg3)':'transparent'};color:${chartMode==='barra'?'var(--ink)':'var(--ink3)'}" onclick="chartMode='barra';renderDash()">Barra</button>
+            <button style="padding:4px 10px;border-radius:6px;font-size:.7rem;font-weight:600;cursor:pointer;border:1px solid var(--border2);font-family:var(--font);transition:all .15s;background:${chartMode==='linha'?'var(--bg3)':'transparent'};color:${chartMode==='linha'?'var(--ink)':'var(--ink3)'}" onclick="chartMode='linha';renderDash()">Linha</button>
+          </div>
+        </div>
+        <div class="chart-wrap" style="height:280px"><canvas id="chEvolucao"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title" style="margin-bottom:14px">Ranking de Vendedores</div>
+        <div class="rank-list" id="rankVendList"></div>
+      </div>
+    </div>
+
+    <div class="chart-row chart-1-1-1 anim">
+      <div class="chart-box">
+        <div class="chart-title" style="margin-bottom:12px">Contratos por Vendedor</div>
+        <div class="chart-wrap" style="height:220px"><canvas id="chContrPie"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title" style="margin-bottom:12px">Faturamento por Filial</div>
+        <div class="chart-wrap" style="height:220px"><canvas id="chFilialPie"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title" style="margin-bottom:14px">Ranking por Filial</div>
+        <div class="rank-list" id="rankFilialList"></div>
+      </div>
+    </div>
+
+    <div class="section-label">Inadimplência &amp; Financeiro</div>
+    <div class="chart-row chart-1-1 anim">
+      <div class="chart-box">
+        <div class="chart-head"><span class="chart-title">Vencimentos × entradas × Inadimplência por Mês</span></div>
+        <div class="chart-wrap" style="height:260px"><canvas id="chInadMes"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-head"><span class="chart-title">Faturamento × Recebimentos por Mês</span></div>
+        <div class="chart-wrap" style="height:260px"><canvas id="chFatRec"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section-label">Contratos Mensais por Filial</div>
+    <div class="chart-row chart-1-1 anim">
+      <div class="chart-box">
+        <div class="chart-head"><span class="chart-title">Contratos Emitidos por Mês e Filial</span></div>
+        <div class="chart-wrap" style="height:250px"><canvas id="chContrFilial"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-head"><span class="chart-title">Valor de Contratos por Mês e Filial</span></div>
+        <div class="chart-wrap" style="height:250px"><canvas id="chValorFilial"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section-label">Tabela Detalhada</div>
+    <div class="card anim">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Mês</th><th>Vendedor</th><th>Filial</th><th>Contratos</th><th>Valor Contratos</th><th>Faturamento</th><th>Recebimentos</th><th>Vencimentos</th><th>Entradas</th><th>Inadimplência</th></tr></thead>
+        <tbody id="dashTbody"></tbody>
+      </table></div>
+    </div>`;
+
+  // Rank vendedores
+  document.getElementById('rankVendList').innerHTML = ranking.map((m,i)=>{
+    const cl = COLORS[VENDEDORES.indexOf(m.nome)%COLORS.length];
+    const nbg = i===0?'#4a3800':i===1?'#1c2b3a':i===2?'#3a1f00':'var(--bg3)';
+    const ncl = i===0?'var(--yellow)':i===1?'var(--blue)':i===2?'var(--orange)':'var(--ink3)';
+    return`<div class="rank-item">
+      <div class="rank-num" style="background:${nbg};color:${ncl}">${i+1}</div>
+      <div class="rank-name">${m.nome}</div>
+      <div class="rank-bar-wrap"><div class="rank-bar" style="width:${(m.valorContratos/maxRank*100).toFixed(1)}%;background:${cl}"></div></div>
+      <div class="rank-val"><div class="rank-val-main" style="color:${cl}">${m.valorContratos>0?fmtR(m.valorContratos):'—'}</div><div class="rank-val-sub">${m.contratos} contr.</div></div>
+    </div>`;
+  }).join('');
+
+  // Rank filiais
+  const maxFil = Math.max(...rankFiliais.map(f=>f.faturamento),1);
+  document.getElementById('rankFilialList').innerHTML = rankFiliais.map((f,i)=>{
+    const cl = FILIAL_COLORS[FILIAIS.indexOf(f.filial)%FILIAL_COLORS.length];
+    const nbg = i===0?'#4a3800':i===1?'#1c2b3a':'var(--bg3)';
+    const ncl = i===0?'var(--yellow)':i===1?'var(--blue)':'var(--ink3)';
+    return`<div class="rank-item">
+      <div class="rank-num" style="background:${nbg};color:${ncl}">${i+1}</div>
+      <div class="rank-name">${f.filial}</div>
+      <div class="rank-bar-wrap"><div class="rank-bar" style="width:${(f.faturamento/maxFil*100).toFixed(1)}%;background:${cl}"></div></div>
+      <div class="rank-val"><div class="rank-val-main" style="color:${cl}">${f.faturamento>0?fmtR(f.faturamento):'—'}</div><div class="rank-val-sub">${f.contratos} contr.</div></div>
+    </div>`;
+  }).join('');
+
+  // Tabela detalhada
+  const fCores = {'Porto Alegre':'badge-blue','Mato Grosso do Sul':'badge-green','Paraná':'badge-orange'};
+  const sortedData = [...data].sort((a,b)=>b.mes>a.mes?1:-1);
+  document.getElementById('dashTbody').innerHTML = sortedData.map(r=>{
+    const inad2 = r.vencimentos>0?((r.vencimentos-r.entradas)/r.vencimentos*100):null;
+    const ic = inad2===null?'var(--ink3)':inad2<=5?'var(--green-light)':inad2<=15?'var(--yellow)':'var(--red)';
+    const ibg = inad2===null?'transparent':inad2<=5?'var(--green-dim)':inad2<=15?'var(--yellow-dim)':'var(--red-dim)';
+    const fcls = fCores[r.filial]||'badge-blue';
+    return`<tr>
+      <td style="font-family:var(--mono);font-weight:600">${mesLabel(r.mes)}</td>
+      <td><span class="badge badge-purple">${r.vendedor}</span></td>
+      <td><span class="badge ${fcls}">${r.filial}</span></td>
+      <td style="font-family:var(--mono);color:var(--orange);font-weight:700">${r.contratos||'—'}</td>
+      <td style="font-family:var(--mono);color:var(--blue)">${r.valorContratos>0?fmtR(r.valorContratos):'—'}</td>
+      <td style="font-family:var(--mono);color:var(--blue);font-weight:700">${r.faturamento>0?fmtR(r.faturamento):'—'}</td>
+      <td style="font-family:var(--mono);color:var(--green-light)">${r.recebimentos>0?fmtR(r.recebimentos):'—'}</td>
+      <td style="font-family:var(--mono)">${r.vencimentos>0?fmtR(r.vencimentos):'—'}</td>
+      <td style="font-family:var(--mono);color:var(--green-light)">${r.entradas>0?fmtR(r.entradas):'—'}</td>
+      <td><span style="padding:3px 9px;border-radius:6px;font-size:.67rem;font-weight:700;font-family:var(--mono);color:${ic};background:${ibg}">${inad2!==null?inad2.toFixed(1)+'%':'—'}</span></td>
+    </tr>`;
+  }).join('');
+
+  setTimeout(()=>renderDashCharts(data,meses,ranking,rankFiliais),30);
+}
+
+function renderDashCharts(data,meses,ranking,rankFiliais){
+  Chart.defaults.font.family='JetBrains Mono';
+  Chart.defaults.color='#8b949e';
+
+  // Evolução valor por vendedor por mês
+  destroyChart('chEvolucao');
+  const allVends = [...new Set(data.map(r=>r.vendedor))].sort();
+  const cvEl = document.getElementById('chEvolucao');
+  if(cvEl) new Chart(cvEl,{
+    type: chartMode==='barra'?'bar':'line',
+    data:{labels:meses.map(mesLabel),datasets:allVends.map((v,i)=>({
+      label:v,
+      data:meses.map(m=>{const r=data.find(r=>r.mes===m&&r.vendedor===v);return r?r.valorContratos:0;}),
+      backgroundColor:COLORS[i%COLORS.length]+(chartMode==='barra'?'cc':'22'),
+      borderColor:COLORS[i%COLORS.length],borderWidth:2,tension:.4,fill:chartMode!=='barra',
+      pointRadius:4,pointHoverRadius:7,borderRadius:chartMode==='barra'?5:0
+    }))},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{position:'top',labels:{boxWidth:10,padding:14,font:{size:10},usePointStyle:true}},
+        tooltip:{callbacks:{label:ctx=>'  '+ctx.dataset.label+': '+fmtR(ctx.parsed.y)}}},
+      scales:{x:{grid:{color:GC},ticks:{font:{size:9}}},
+        y:{grid:{color:GC},ticks:{font:{size:9},callback:v=>'R$ '+Number(v).toLocaleString('pt-BR',{maximumFractionDigits:0})},beginAtZero:true}}}
+  });
+
+  // Pie contratos por vendedor (somado)
+  destroyChart('chContrPie');
+  const cpEl = document.getElementById('chContrPie');
+  if(cpEl){
+    const sorted = [...ranking].sort((a,b)=>b.contratos-a.contratos).filter(r=>r.contratos>0);
+    new Chart(cpEl,{
+      type:'doughnut',
+      data:{labels:sorted.map(r=>r.nome),datasets:[{
+        data:sorted.map(r=>r.contratos),
+        backgroundColor:sorted.map(r=>COLORS[VENDEDORES.indexOf(r.nome)%COLORS.length]+'cc'),
+        borderColor:sorted.map(r=>COLORS[VENDEDORES.indexOf(r.nome)%COLORS.length]),
+        borderWidth:2,hoverOffset:8
+      }]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+        plugins:{legend:{position:'right',labels:{font:{size:9},boxWidth:10,padding:10,usePointStyle:true}},
+          tooltip:{callbacks:{label:ctx=>ctx.label+': '+ctx.parsed+' contr.'}}}}
+    });
+  }
+
+  // Pie faturamento por filial
+  destroyChart('chFilialPie');
+  const fpEl = document.getElementById('chFilialPie');
+  if(fpEl){
+    const sorted = [...rankFiliais].filter(r=>r.faturamento>0);
+    new Chart(fpEl,{
+      type:'doughnut',
+      data:{labels:sorted.map(r=>r.filial),datasets:[{
+        data:sorted.map(r=>r.faturamento),
+        backgroundColor:sorted.map(r=>FILIAL_COLORS[FILIAIS.indexOf(r.filial)]+'cc'),
+        borderColor:sorted.map(r=>FILIAL_COLORS[FILIAIS.indexOf(r.filial)]),
+        borderWidth:2,hoverOffset:8
+      }]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+        plugins:{legend:{position:'right',labels:{font:{size:9},boxWidth:10,padding:10,usePointStyle:true}},
+          tooltip:{callbacks:{label:ctx=>ctx.label+': '+fmtR(ctx.parsed)}}}}
+    });
+  }
+
+  // Vencimentos x Entradas x Inadimplência por mês
+  destroyChart('chInadMes');
+  const imEl = document.getElementById('chInadMes');
+  if(imEl){
+    const vencMes = meses.map(m=>data.filter(r=>r.mes===m).reduce((s,r)=>s+(r.vencimentos||0),0));
+    const pagMes = meses.map(m=>data.filter(r=>r.mes===m).reduce((s,r)=>s+(r.entradas||0),0));
+    const inadMes = meses.map((m,i)=>vencMes[i]>0?((vencMes[i]-pagMes[i])/vencMes[i]*100):0);
+    new Chart(imEl,{
+      type:'bar',
+      data:{labels:meses.map(mesLabel),datasets:[
+        {label:'Vencimentos',data:vencMes,backgroundColor:'rgba(240,136,62)',borderColor:'var(--orange)',borderWidth:2,borderRadius:4,yAxisID:'y'},
+        {label:'Entradas',data:pagMes,backgroundColor:'rgba(86,211,100)',borderColor:'var(--green-light)',borderWidth:2,borderRadius:4,yAxisID:'y'},
+        {label:'Inadimplência %',data:inadMes,backgroundColor:'rgba(248,81,73)',borderColor:'var(--red)',borderWidth:2.5,type:'line',tension:.4,pointRadius:5,yAxisID:'y2'},
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+        plugins:{legend:{position:'top',labels:{font:{size:9},boxWidth:10,padding:12,usePointStyle:true}}},
+        scales:{
+          x:{grid:{color:GC},ticks:{font:{size:9}}},
+          y:{grid:{color:GC},ticks:{font:{size:9},callback:v=>'R$ '+Number(v).toLocaleString('pt-BR',{maximumFractionDigits:0})},beginAtZero:true,position:'left'},
+          y2:{grid:{display:false},ticks:{font:{size:9},callback:v=>v.toFixed(0)+'%'},beginAtZero:true,position:'right',max:100}
+        }}
+    });
+  }
+
+  // Faturamento x Recebimentos por mês
+  destroyChart('chFatRec');
+  const frEl = document.getElementById('chFatRec');
+  if(frEl){
+    const fatMes = meses.map(m=>data.filter(r=>r.mes===m).reduce((s,r)=>s+(r.faturamento||0),0));
+    const recMes = meses.map(m=>data.filter(r=>r.mes===m).reduce((s,r)=>s+(r.recebimentos||0),0));
+    new Chart(frEl,{
+      type:'bar',
+      data:{labels:meses.map(mesLabel),datasets:[
+        {label:'Faturamento',data:fatMes,backgroundColor:'rgba(88,166,255)',borderColor:'var(--blue)',borderWidth:2,borderRadius:4},
+        {label:'Recebimentos',data:recMes,backgroundColor:'rgba(86,211,100)',borderColor:'var(--green-light)',borderWidth:2,borderRadius:4},
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+        plugins:{legend:{position:'top',labels:{font:{size:9},boxWidth:10,padding:12,usePointStyle:true}},
+          tooltip:{callbacks:{label:ctx=>'  '+ctx.dataset.label+': '+fmtR(ctx.parsed.y)}}},
+        scales:{x:{grid:{color:GC},ticks:{font:{size:9}}},y:{grid:{color:GC},ticks:{font:{size:9},callback:v=>'R$ '+Number(v).toLocaleString('pt-BR',{maximumFractionDigits:0})},beginAtZero:true}}}
+    });
+  }
+
+  // Contratos por mês e filial
+  destroyChart('chContrFilial');
+  const cfEl = document.getElementById('chContrFilial');
+  if(cfEl) new Chart(cfEl,{
+    type:'bar',
+    data:{labels:meses.map(mesLabel),datasets:FILIAIS.map((f,i)=>({
+      label:f,
+      data:meses.map(m=>data.filter(r=>r.mes===m&&r.filial===f).reduce((s,r)=>s+(r.contratos||0),0)),
+      backgroundColor:FILIAL_COLORS[i]+'cc',borderColor:FILIAL_COLORS[i],borderWidth:2,borderRadius:4
+    }))},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{position:'top',labels:{font:{size:9},boxWidth:10,padding:12,usePointStyle:true}}},
+      scales:{x:{grid:{color:GC},stacked:true,ticks:{font:{size:9}}},y:{grid:{color:GC},stacked:true,ticks:{font:{size:9},stepSize:1},beginAtZero:true}}}
+  });
+
+  // Valor contratos por mês e filial
+  destroyChart('chValorFilial');
+  const vfEl = document.getElementById('chValorFilial');
+  if(vfEl) new Chart(vfEl,{
+    type:'bar',
+    data:{labels:meses.map(mesLabel),datasets:FILIAIS.map((f,i)=>({
+      label:f,
+      data:meses.map(m=>data.filter(r=>r.mes===m&&r.filial===f).reduce((s,r)=>s+(r.valorContratos||0),0)),
+      backgroundColor:FILIAL_COLORS[i]+'cc',borderColor:FILIAL_COLORS[i],borderWidth:2,borderRadius:4
+    }))},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{position:'top',labels:{font:{size:9},boxWidth:10,padding:12,usePointStyle:true}},
+        tooltip:{callbacks:{label:ctx=>'  '+ctx.dataset.label+': '+fmtR(ctx.parsed.y)}}},
+      scales:{x:{grid:{color:GC},stacked:true,ticks:{font:{size:9}}},y:{grid:{color:GC},stacked:true,ticks:{font:{size:9},callback:v=>'R$ '+Number(v).toLocaleString('pt-BR',{maximumFractionDigits:0})},beginAtZero:true}}}
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+//  FINANCEIRO DETALHADO
+// ─────────────────────────────────────────────────────────────
+function renderFin(){
+  const data = filterFin2();
+  const el = document.getElementById('finConteudo');
+  if(!data.length){
+    el.innerHTML=`<div style="text-align:center;padding:48px;color:var(--ink3)">Nenhum dado para os filtros selecionados.</div>`;
+    return;
+  }
+  const totVenc = data.reduce((s,r)=>s+(r.vencimentos||0),0);
+  const totPag = data.reduce((s,r)=>s+(r.entradas||0),0);
+  const totRec = data.reduce((s,r)=>s+(r.recebimentos||0),0);
+  const totFat = data.reduce((s,r)=>s+(r.faturamento||0),0);
+  const inad = totVenc>0?((totVenc-totPag)/totVenc*100):null;
+  const inadCor = inad===null?'var(--ink)':inad<=5?'var(--green-light)':inad<=15?'var(--yellow)':'var(--red)';
+  const meses = [...new Set(data.map(r=>r.mes))].sort();
+
+  el.innerHTML=`
+    <div class="kpi-grid anim">
+      ${kpiCard('📊','Faturamento Total',fmtR(totFat),'no período','var(--blue)','var(--blue)')}
+      ${kpiCard('💰','Total Recebido',fmtR(totRec),'no período','var(--green-light)','var(--green)')}
+      ${kpiCard('⏰','Total Vencimentos',fmtR(totVenc),'no período','var(--orange)','var(--orange)')}
+      ${kpiCard('✅','Entradas do mês',fmtR(totPag),'no período','var(--green-light)','var(--green)')}
+      ${kpiCard('⚠️','Inadimplência',inad!==null?inad.toFixed(1)+'%':'—','(vencimentos − entradas) ÷ vencimentos',inadCor,inadCor)}
+      ${kpiCard('💸','Valor em Aberto',fmtR(Math.max(0,totVenc-totPag)),'vencimentos não pagos','var(--red)','var(--red)')}
+    </div>
+
+    <div class="chart-row chart-1-1 anim">
+      <div class="chart-box">
+        <div class="chart-head"><span class="chart-title">Inadimplência por Mês (%)</span></div>
+        <div class="chart-wrap" style="height:250px"><canvas id="chFinInadLine"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-head"><span class="chart-title">Inadimplência por Vendedor (%)</span></div>
+        <div class="chart-wrap" style="height:250px"><canvas id="chFinInadVend"></canvas></div>
+      </div>
+    </div>
+
+    <div class="chart-row chart-1-1 anim">
+      <div class="chart-box">
+        <div class="chart-head"><span class="chart-title">Inadimplência por Filial (%)</span></div>
+        <div class="chart-wrap" style="height:250px"><canvas id="chFinInadFilial"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-head"><span class="chart-title">Recebimentos vs Faturamento por Mês</span></div>
+        <div class="chart-wrap" style="height:250px"><canvas id="chFinRecFat"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section-label">Detalhamento por Vendedor e Mês</div>
+    <div class="card anim">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Mês</th><th>Vendedor</th><th>Filial</th><th>Faturamento</th><th>Recebimentos</th><th>Vencimentos</th><th>Entradas</th><th>Em Aberto</th><th>Inadimplência</th></tr></thead>
+        <tbody id="finTbody"></tbody>
+      </table></div>
+    </div>`;
+
+  // Tabela
+  const fCores = {'Porto Alegre':'badge-blue','Mato Grosso do Sul':'badge-green','Paraná':'badge-orange'};
+  const sortedData = [...data].sort((a,b)=>b.mes>a.mes?1:-1);
+  document.getElementById('finTbody').innerHTML = sortedData.map(r=>{
+    const inad2 = r.vencimentos>0?((r.vencimentos-r.entradas)/r.vencimentos*100):null;
+    const aberto = Math.max(0,(r.vencimentos||0)-(r.entradas||0));
+    const ic = inad2===null?'var(--ink3)':inad2<=5?'var(--green-light)':inad2<=15?'var(--yellow)':'var(--red)';
+    const ibg = inad2===null?'transparent':inad2<=5?'var(--green-dim)':inad2<=15?'var(--yellow-dim)':'var(--red-dim)';
+    const fcls = fCores[r.filial]||'badge-blue';
+    return`<tr>
+      <td style="font-family:var(--mono);font-weight:600">${mesLabel(r.mes)}</td>
+      <td><span class="badge badge-purple">${r.vendedor}</span></td>
+      <td><span class="badge ${fcls}">${r.filial}</span></td>
+      <td style="font-family:var(--mono);color:var(--blue)">${fmtR(r.faturamento)}</td>
+      <td style="font-family:var(--mono);color:var(--green-light)">${fmtR(r.recebimentos)}</td>
+      <td style="font-family:var(--mono)">${fmtR(r.vencimentos)}</td>
+      <td style="font-family:var(--mono);color:var(--green-light)">${fmtR(r.entradas)}</td>
+      <td style="font-family:var(--mono);color:${aberto>0?'var(--red)':'var(--green-light)'};font-weight:700">${aberto>0?fmtR(aberto):'Quitado'}</td>
+      <td><span style="padding:3px 9px;border-radius:6px;font-size:.67rem;font-weight:700;font-family:var(--mono);color:${ic};background:${ibg}">${inad2!==null?inad2.toFixed(1)+'%':'—'}</span></td>
+    </tr>`;
+  }).join('');
+
+  setTimeout(()=>{
+    Chart.defaults.font.family='JetBrains Mono';
+    Chart.defaults.color='#8b949e';
+
+    // Inadimplência por mês linha
+    destroyChart('chFinInadLine');
+    const il = document.getElementById('chFinInadLine');
+    if(il){
+      const inadArr = meses.map(m=>{
+        const mv=data.filter(r=>r.mes===m).reduce((s,r)=>s+(r.vencimentos||0),0);
+        const mp=data.filter(r=>r.mes===m).reduce((s,r)=>s+(r.entradas||0),0);
+        return mv>0?((mv-mp)/mv*100):0;
+      });
+      new Chart(il,{
+        type:'line',
+        data:{labels:meses.map(mesLabel),datasets:[{
+          label:'Inadimplência %',data:inadArr,borderColor:'var(--red)',backgroundColor:'rgba(248,81,73)',
+          borderWidth:2.5,tension:.4,fill:true,pointRadius:5,pointBackgroundColor:'var(--red)'
+        }]},
+        options:{responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{display:false},
+            tooltip:{callbacks:{label:ctx=>ctx.parsed.y.toFixed(1)+'%'}}},
+          scales:{x:{grid:{color:GC},ticks:{font:{size:9}}},
+            y:{grid:{color:GC},ticks:{font:{size:9},callback:v=>v.toFixed(0)+'%'},beginAtZero:true,max:100}}}
+      });
+    }
+
+    // Inadimplência por vendedor (barra)
+    destroyChart('chFinInadVend');
+    const iv = document.getElementById('chFinInadVend');
+    if(iv){
+      const allVendsFin=[...new Set(data.map(r=>r.vendedor))].sort();
+      const inadVend=allVendsFin.map(v=>{
+        const vd=data.filter(r=>r.vendedor===v);
+        const mv=vd.reduce((s,r)=>s+(r.vencimentos||0),0);
+        const mp=vd.reduce((s,r)=>s+(r.entradas||0),0);
+        return mv>0?((mv-mp)/mv*100):0;
+      });
+      new Chart(iv,{
+        type:'bar',
+        data:{labels:allVendsFin,datasets:[{
+          label:'Inadimplência %',data:inadVend,
+          backgroundColor:allVendsFin.map((_,i)=>COLORS[i%COLORS.length]+'cc'),
+          borderColor:allVendsFin.map((_,i)=>COLORS[i%COLORS.length]),borderWidth:2,borderRadius:6
+        }]},
+        options:{responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{display:false}},
+          scales:{x:{grid:{color:GC},ticks:{font:{size:9}}},
+            y:{grid:{color:GC},ticks:{font:{size:9},callback:v=>v.toFixed(0)+'%'},beginAtZero:true,max:100}}}
+      });
+    }
+
+    // Inadimplência por filial
+    destroyChart('chFinInadFilial');
+    const iff = document.getElementById('chFinInadFilial');
+    if(iff){
+      const inadFil=FILIAIS.map(f=>{
+        const fd=data.filter(r=>r.filial===f);
+        const mv=fd.reduce((s,r)=>s+(r.vencimentos||0),0);
+        const mp=fd.reduce((s,r)=>s+(r.entradas||0),0);
+        return mv>0?((mv-mp)/mv*100):0;
+      });
+      new Chart(iff,{
+        type:'bar',
+        data:{labels:FILIAIS,datasets:[{
+          label:'Inadimplência %',data:inadFil,
+          backgroundColor:FILIAL_COLORS.map(c=>c+'cc'),
+          borderColor:FILIAL_COLORS,borderWidth:2,borderRadius:6
+        }]},
+        options:{responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{display:false}},
+          scales:{x:{grid:{color:GC},ticks:{font:{size:9}}},
+            y:{grid:{color:GC},ticks:{font:{size:9},callback:v=>v.toFixed(0)+'%'},beginAtZero:true,max:100}}}
+      });
+    }
+
+    // Recebimentos vs Faturamento por mês
+    destroyChart('chFinRecFat');
+    const rf = document.getElementById('chFinRecFat');
+    if(rf){
+      const fatArr = meses.map(m=>data.filter(r=>r.mes===m).reduce((s,r)=>s+(r.faturamento||0),0));
+      const recArr = meses.map(m=>data.filter(r=>r.mes===m).reduce((s,r)=>s+(r.recebimentos||0),0));
+      new Chart(rf,{
+        type:'bar',
+        data:{labels:meses.map(mesLabel),datasets:[
+          {label:'Faturamento',data:fatArr,backgroundColor:'rgba(88,166,255)',borderColor:'var(--blue)',borderWidth:2,borderRadius:4},
+          {label:'Recebimentos',data:recArr,backgroundColor:'rgba(86,211,100)',borderColor:'var(--green-light)',borderWidth:2,borderRadius:4},
+        ]},
+        options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+          plugins:{legend:{position:'top',labels:{font:{size:9},boxWidth:10,padding:12,usePointStyle:true}},
+            tooltip:{callbacks:{label:ctx=>'  '+ctx.dataset.label+': '+fmtR(ctx.parsed.y)}}},
+          scales:{x:{grid:{color:GC},ticks:{font:{size:9}}},y:{grid:{color:GC},ticks:{font:{size:9},callback:v=>'R$ '+Number(v).toLocaleString('pt-BR',{maximumFractionDigits:0})},beginAtZero:true}}}
+      });
+    }
+  },30);
+}
+
+// ─────────────────────────────────────────────────────────────
+//  TV PAINEL
+// ─────────────────────────────────────────────────────────────
+function renderTV(){
+  const tvFilial = document.getElementById('tvFilial').value;
+  const tvMesVal = document.getElementById('tvMes').value;
+
+  let data = getLatestData(allData);
+  if(tvFilial) data = data.filter(r=>r.filial===tvFilial);
+
+  // pegar mês de referência
+  const meses = [...new Set(getLatestData(allData).map(r=>r.mes))].sort();
+  const mesSel = tvMesVal || meses[meses.length-1];
+
+  const dataMes = data.filter(r=>r.mes===mesSel);
+  const el = document.getElementById('tvConteudo');
+
+  if(!dataMes.length){
+    el.innerHTML=`<div style="text-align:center;padding:60px;color:var(--ink3)"><div style="font-size:3rem;margin-bottom:12px">🖥️</div><p>Nenhum dado para exibir no painel.</p></div>`;
+    return;
+  }
+
+  const totContr = dataMes.reduce((s,r)=>s+(r.contratos||0),0);
+  const totValContr = dataMes.reduce((s,r)=>s+(r.valorContratos||0),0);
+  const totFat = dataMes.reduce((s,r)=>s+(r.faturamento||0),0);
+  const totRec = dataMes.reduce((s,r)=>s+(r.recebimentos||0),0);
+  const totVenc = dataMes.reduce((s,r)=>s+(r.vencimentos||0),0);
+  const totPag = dataMes.reduce((s,r)=>s+(r.entradas||0),0);
+  const inad = totVenc>0?((totVenc-totPag)/totVenc*100):null;
+  const inadCor = inad===null?'var(--ink)':inad<=5?'var(--green-light)':inad<=15?'var(--yellow)':'var(--red)';
+
+  const ranking = [...dataMes].sort((a,b)=>b.valorContratos-a.valorContratos);
+  const maxVal = ranking[0]?.valorContratos||1;
+  const medals = ['🥇','🥈','🥉'];
+
+  // contratos por filial no mês
+  const filialContr = FILIAIS.map(f=>({filial:f,contratos:dataMes.filter(r=>r.filial===f).reduce((s,r)=>s+(r.contratos||0),0),fat:dataMes.filter(r=>r.filial===f).reduce((s,r)=>s+(r.faturamento||0),0)})).sort((a,b)=>b.contratos-a.contratos);
+  const maxFil = Math.max(...filialContr.map(f=>f.contratos),1);
+
+  el.innerHTML=`
+    <div style="display:grid;gap:16px">
+      <div style="text-align:center;padding:16px 20px;background:var(--surface);border:1px solid var(--border2);border-radius:14px">
+        <div style="font-size:1.4rem;font-weight:800;letter-spacing:-.03em">Painel de Desempenho SMK</div>
+        <div style="font-size:.72rem;font-family:var(--mono);color:var(--ink3);margin-top:4px">${mesLabel(mesSel)} ${tvFilial?'· '+tvFilial:''} · Atualizado ${new Date().toLocaleString('pt-BR')}</div>
+      </div>
+
+      <div class="tv-kpi-grid">
+        <div class="tv-kpi"><div class="tv-kpi-icon">📋</div><div class="tv-kpi-label">Contratos Emitidos</div><div class="tv-kpi-val" style="color:var(--orange)">${totContr}</div></div>
+        <div class="tv-kpi"><div class="tv-kpi-icon">💼</div><div class="tv-kpi-label">Valor Contratos</div><div class="tv-kpi-val" style="font-size:1rem;color:var(--blue)">${totValContr>0?fmtR(totValContr):'—'}</div></div>
+        <div class="tv-kpi"><div class="tv-kpi-icon">📊</div><div class="tv-kpi-label">Faturamento</div><div class="tv-kpi-val" style="font-size:1rem;color:var(--blue)">${totFat>0?fmtR(totFat):'—'}</div></div>
+        <div class="tv-kpi"><div class="tv-kpi-icon">💰</div><div class="tv-kpi-label">Recebimentos</div><div class="tv-kpi-val" style="font-size:1rem;color:var(--green-light)">${totRec>0?fmtR(totRec):'—'}</div></div>
+        <div class="tv-kpi"><div class="tv-kpi-icon">⏰</div><div class="tv-kpi-label">Vencimentos</div><div class="tv-kpi-val" style="font-size:1rem;color:var(--orange)">${totVenc>0?fmtR(totVenc):'—'}</div></div>
+        <div class="tv-kpi"><div class="tv-kpi-icon">✅</div><div class="tv-kpi-label">Entradas</div><div class="tv-kpi-val" style="font-size:1rem;color:var(--green-light)">${totPag>0?fmtR(totPag):'—'}</div></div>
+        <div class="tv-kpi"><div class="tv-kpi-icon">⚠️</div><div class="tv-kpi-label">Inadimplência</div><div class="tv-kpi-val" style="color:${inadCor}">${inad!==null?inad.toFixed(1)+'%':'—'}</div></div>
+        <div class="tv-kpi"><div class="tv-kpi-icon">👥</div><div class="tv-kpi-label">Vendedores Ativos</div><div class="tv-kpi-val" style="color:var(--purple)">${dataMes.length}</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:18px">
+          <div style="font-size:.6rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">🏆 Ranking — ${mesLabel(mesSel)}</div>
+          ${ranking.map((r,i)=>`
+            <div class="tv-ranking">
+              <span style="font-size:1.2rem;flex-shrink:0">${medals[i]||((i+1)+'.')}</span>
+              <span style="flex:1;font-size:.88rem;font-weight:700">${r.vendedor}</span>
+              <div style="flex:2;height:7px;background:var(--bg3);border-radius:100px;overflow:hidden">
+                <div style="height:100%;background:${COLORS[VENDEDORES.indexOf(r.vendedor)%COLORS.length]};width:${(r.valorContratos/maxVal*100).toFixed(1)}%;border-radius:100px"></div>
+              </div>
+              <div style="text-align:right;min-width:100px">
+                <div style="font-size:.8rem;font-family:var(--mono);font-weight:700;color:${COLORS[VENDEDORES.indexOf(r.vendedor)%COLORS.length]}">${r.valorContratos>0?fmtR(r.valorContratos):'—'}</div>
+                <div style="font-size:.6rem;font-family:var(--mono);color:var(--ink3)">${r.contratos} contr.</div>
+              </div>
+            </div>`).join('')}
+        </div>
+
+        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:18px">
+          <div style="font-size:.6rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">📍 Desempenho por Vendedor</div>
+          <div class="tv-sc-grid">
+            ${dataMes.map(r=>{
+              const c=COLORS[VENDEDORES.indexOf(r.vendedor)%COLORS.length];
+              const inad2=r.vencimentos>0?((r.vencimentos-r.entradas)/r.vencimentos*100):null;
+              const ic2=inad2===null?'var(--ink3)':inad2<=5?'var(--green-light)':inad2<=15?'var(--yellow)':'var(--red)';
+              return`<div class="tv-sc" style="--c:${c}">
+                <div style="font-size:.83rem;font-weight:700;margin-bottom:4px;color:${c}">${r.vendedor}</div>
+                <div style="font-size:.6rem;font-family:var(--mono);color:var(--ink3);margin-bottom:8px">📍 ${r.filial}</div>
+                <div class="tv-mini-grid">
+                  <div class="tv-mini-box"><div class="tv-mini-label">Contratos</div><div class="tv-mini-val" style="color:var(--orange)">${r.contratos||'—'}</div></div>
+                  <div class="tv-mini-box"><div class="tv-mini-label">Fat.</div><div class="tv-mini-val" style="font-size:.78rem;color:var(--blue)">${r.faturamento>0?'R$ '+Number(r.faturamento).toLocaleString('pt-BR',{notation:'compact',maximumFractionDigits:0}):'—'}</div></div>
+                  <div class="tv-mini-box"><div class="tv-mini-label">Inad.</div><div class="tv-mini-val" style="font-size:.85rem;color:${ic2}">${inad2!==null?inad2.toFixed(0)+'%':'—'}</div></div>
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+
+        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:18px">
+          <div style="font-size:.6rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">🏢 Contratos por Filial</div>
+          ${filialContr.map((f,i)=>{
+            const cl=FILIAL_COLORS[FILIAIS.indexOf(f.filial)%FILIAL_COLORS.length];
+            return`<div class="tv-ranking">
+              <span style="font-size:1rem;flex-shrink:0">${medals[i]||'·'}</span>
+              <span style="flex:1;font-size:.83rem;font-weight:600">${f.filial}</span>
+              <div style="flex:2;height:7px;background:var(--bg3);border-radius:100px;overflow:hidden">
+                <div style="height:100%;background:${cl};width:${(f.contratos/maxFil*100).toFixed(1)}%;border-radius:100px"></div>
+              </div>
+              <div style="text-align:right;min-width:60px;font-size:.8rem;font-family:var(--mono);font-weight:700;color:${cl}">${f.contratos}</div>
+            </div>`;
+          }).join('')}
+          <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border2)">
+            <div style="font-size:.58rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;margin-bottom:10px">Inadimplência por Filial</div>
+            ${FILIAIS.map((f,i)=>{
+              const fd=dataMes.filter(r=>r.filial===f);
+              const mv=fd.reduce((s,r)=>s+(r.vencimentos||0),0);
+              const mp=fd.reduce((s,r)=>s+(r.entradas||0),0);
+              const inadF=mv>0?((mv-mp)/mv*100):null;
+              const ic3=inadF===null?'var(--ink3)':inadF<=5?'var(--green-light)':inadF<=15?'var(--yellow)':'var(--red)';
+              const cl=FILIAL_COLORS[i];
+              return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <span style="font-size:.8rem;flex:1;font-weight:600;color:${cl}">${f}</span>
+                <span style="font-size:.75rem;font-family:var(--mono);font-weight:700;color:${ic3}">${inadF!==null?inadF.toFixed(1)+'%':'—'}</span>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+      <div style="text-align:right;font-size:.62rem;font-family:var(--mono);color:var(--ink3)">SMK Indicadores · Atualizado em ${new Date().toLocaleString('pt-BR')}</div>
+    </div>`;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  GOOGLE SHEETS INTEGRATION
+// ─────────────────────────────────────────────────────────────
+const SHEETS_SCOPE = 'https://www.googleapis.com/auth/spreadsheets';
+let sheetsConnected = false;
+let sheetsToken = null;
+
+function salvarConfigSheets(){
+  const cid = document.getElementById('cfgClientId').value.trim();
+  const sid = document.getElementById('cfgSheetId').value.trim();
+  if(!cid||!sid){toast('Preencha o Client ID e o ID da Planilha.','err');return;}
+  localStorage.setItem('smk_gClientId', cid);
+  localStorage.setItem('smk_gSheetId', sid);
+  toast('Configuração salva! Clique em 🔗 Sheets para conectar.','ok');
+}
+
+function abrirConfig(){
+  // preenche campos de Sheets config ao abrir modal
+  document.getElementById('cfgClientId').value = localStorage.getItem('smk_gClientId')||'';
+  document.getElementById('cfgSheetId').value  = localStorage.getItem('smk_gSheetId')||'';
+  document.getElementById('cfgGasUrl').value   = localStorage.getItem('smk_gasUrl')||'';
+  renderVendChips();
+  document.getElementById('modalConfig').style.display='flex';
+}
+
+function toggleSheets(){
+  if(sheetsConnected) desconectarSheets();
+  else conectarSheets();
+}
+
+function conectarSheets(){
+  const CLIENT_ID = localStorage.getItem('smk_gClientId')||'';
+  const SHEET_ID  = localStorage.getItem('smk_gSheetId')||'';
+  if(!CLIENT_ID||!SHEET_ID){
+    toast('Configure o Client ID e ID da Planilha em ⚙ Configurar primeiro.','err');
+    abrirConfig();
+    return;
+  }
+  if(typeof google === 'undefined'){
+    toast('Script do Google ainda carregando. Aguarde e tente novamente.','err');
+    return;
+  }
+  try{
+    const tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SHEETS_SCOPE,
+      callback:(resp)=>{
+        if(resp.error){toast('Erro na autenticação Google: '+resp.error,'err');return;}
+        sheetsToken = resp.access_token;
+        sheetsConnected = true;
+        atualizarBtnSheets();
+        carregarDoSheets();
+      }
+    });
+    tokenClient.requestAccessToken();
+  }catch(e){
+    toast('Erro ao iniciar autenticação: '+e.message,'err');
+  }
+}
+
+function desconectarSheets(){
+  if(sheetsToken){
+    try{ google.accounts.oauth2.revoke(sheetsToken,()=>{}); }catch(e){}
+  }
+  sheetsToken = null;
+  sheetsConnected = false;
+  atualizarBtnSheets();
+  toast('Desconectado do Google Sheets.','info');
+}
+
+function atualizarBtnSheets(){
+  const btn = document.getElementById('btnSheets');
+  const dot = document.getElementById('dotStatus');
+  const txt = document.getElementById('txtStatus');
+  if(sheetsConnected){
+    btn.innerHTML = '✕ Desconectar Sheets';
+    btn.className = 'btn btn-danger btn-sm';
+    dot.className = 'dot dot-g';
+    txt.textContent = 'Google Sheets ativo';
+  } else {
+    btn.innerHTML = '🔗 Sheets';
+    btn.className = 'btn btn-ghost btn-sm';
+    dot.className = 'dot dot-g';
+    txt.textContent = 'dados locais';
+  }
+}
+
+async function carregarDoSheets(){
+  const SHEET_ID = localStorage.getItem('smk_gSheetId')||'';
+  try{
+    toast('Carregando dados do Sheets…','info');
+    const resp = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Dados!A:Z`,
+      {headers:{Authorization:'Bearer '+sheetsToken}}
+    );
+    const json = await resp.json();
+    if(json.error){toast('Erro Sheets: '+json.error.message,'err');return;}
+    if(!json.values||json.values.length<2){toast('Planilha vazia. Salve um lançamento para criar os dados.','info');return;}
+    const [header,...rows] = json.values;
+    const numCols = ['contratos','valorContratos','faturamento','recebimentos','vencimentos','entradas'];
+    allData = rows.map(r=>{
+      const obj={};
+      header.forEach((h,i)=>obj[h]=r[i]??'');
+      numCols.forEach(k=>{if(obj[k]!==undefined) obj[k]=parseFloat(String(obj[k]).replace(',','.'))||0;});
+      return obj;
+    });
+    salvarStorage();
+    popularSelects();
+    renderHist();
+    toast('Dados carregados do Google Sheets!','ok');
+  }catch(e){
+    toast('Erro ao carregar do Sheets: '+e.message,'err');
+  }
+}
+
+async function sincronizarNoSheets(){
+  const gasUrl = localStorage.getItem('smk_gasUrl')||'';
+
+  // ── Modo GAS (preferencial) ──────────────────────────────────
+  if(gasUrl){
+    try{
+      const payload = { acao:'sincronizar', dados: allData };
+      const res = await fetch(gasUrl, {
+        method:'POST',
+        body: JSON.stringify(payload)
+      });
+      const json = await res.json();
+      if(json.ok){
+        document.getElementById('txtStatus').textContent =
+          `sincronizado ${new Date().toLocaleTimeString('pt-BR')} · ${json.totalHistorico} reg.`;
+      } else {
+        toast('Erro GAS: '+(json.erro||'desconhecido'),'err');
+      }
+    }catch(e){
+      toast('Erro ao enviar para o Apps Script: '+e.message,'err');
+    }
+    return;
+  }
+
+  // ── Modo OAuth direto (fallback) ─────────────────────────────
+  if(!sheetsConnected) return;
+  const SHEET_ID = localStorage.getItem('smk_gSheetId')||'';
+  const cols = ['id','mes','vendedor','filial','contratos','valorContratos','faturamento','recebimentos','vencimentos','entradas','dataLancamento','savedAt'];
+  const values = [cols, ...allData.map(r=>cols.map(c=>r[c]??''))];
+  try{
+    await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Histórico!A:Z:clear`,
+      {method:'POST',headers:{Authorization:'Bearer '+sheetsToken,'Content-Type':'application/json'},body:'{}'}
+    );
+    await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Histórico!A1?valueInputOption=RAW`,
+      {method:'PUT',headers:{Authorization:'Bearer '+sheetsToken,'Content-Type':'application/json'},body:JSON.stringify({values})}
+    );
+    document.getElementById('txtStatus').textContent = 'sincronizado '+new Date().toLocaleTimeString('pt-BR');
+  }catch(e){
+    toast('Erro ao sincronizar no Sheets: '+e.message,'err');
+  }
+}
+
+function salvarConfigGas(){
+  const url = document.getElementById('cfgGasUrl').value.trim();
+  if(!url){toast('Cole a URL do Web App primeiro.','err');return;}
+  localStorage.setItem('smk_gasUrl', url);
+  toast('URL do Apps Script salva!','ok');
+  document.getElementById('dotStatus').className='dot dot-g';
+  document.getElementById('txtStatus').textContent='GAS configurado';
+}
+
+
+function fecharConfig(){document.getElementById('modalConfig').style.display='none';}
+
+function renderVendChips(){
+  const el = document.getElementById('vendList');
+  if(!el) return;
+  el.innerHTML = VENDEDORES.map((v,i)=>`
+    <div class="vend-chip" style="border-color:${COLORS[i%COLORS.length]}44">
+      <span style="width:8px;height:8px;border-radius:50%;background:${COLORS[i%COLORS.length]};flex-shrink:0"></span>
+      ${v}
+      <button onclick="removerVendedor('${v}')" title="Remover">✕</button>
+    </div>`).join('');
+}
+
+function adicionarVendedor(){
+  const nome = document.getElementById('novoVendNome').value.trim();
+  if(!nome){toast('Digite o nome do vendedor.','err');return;}
+  if(VENDEDORES.includes(nome)){toast('Vendedor já existe.','err');return;}
+  VENDEDORES.push(nome);
+  document.getElementById('novoVendNome').value='';
+  salvarStorage();
+  popularSelects();
+  toast('Vendedor adicionado!','ok');
+}
+
+function removerVendedor(nome){
+  if(!confirm(`Remover vendedor "${nome}"? Os lançamentos associados a ele serão mantidos.`)) return;
+  VENDEDORES = VENDEDORES.filter(v=>v!==nome);
+  salvarStorage();
+  popularSelects();
+  toast('Vendedor removido.','ok');
+}
+
+function exportarDados(){
+  const exp = {vendedores:VENDEDORES,dados:allData,exportadoEm:new Date().toISOString()};
+  const blob = new Blob([JSON.stringify(exp,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'smk-indicadores-'+getMesAtual()+'.json';
+  a.click();
+  toast('Dados exportados!','ok');
+}
+
+function importarDados(){document.getElementById('importFile').click();}
+function handleImport(e){
+  const file = e.target.files[0];if(!file)return;
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    try{
+      const imp = JSON.parse(ev.target.result);
+      if(imp.dados) allData = imp.dados;
+      if(imp.vendedores) VENDEDORES = imp.vendedores;
+      salvarStorage();
+      popularSelects();
+      renderHist();
+      toast('Dados importados com sucesso!','ok');
+    }catch(err){toast('Erro ao importar arquivo.','err');}
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
+
+function confirmarLimpar(){
+  if(!confirm('ATENÇÃO: Isso irá apagar TODOS os lançamentos permanentemente. Confirma?')) return;
+  if(!confirm('Tem certeza absoluta? Esta ação não pode ser desfeita.')) return;
+  allData = [];
+  salvarStorage();
+  popularSelects();
+  renderHist();
+  toast('Todos os dados foram removidos.','info');
+}
+
+function toggleFullscreen(){
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+  else document.exitFullscreen();
+}
+
+// ─────────────────────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────────────────────
+(function init(){
+  carregarStorage();
+  // Mês atual no formulário
+  document.getElementById('lancMes').value = getMesAtual();
+  // Data de lançamento padrão = hoje
+  document.getElementById('lancData').value = getDataHoje();
+  // Selects
+  popularSelects();
+  // Histórico
+  renderHist();
+  document.getElementById('dotStatus').className='dot dot-g';
+  document.getElementById('txtStatus').textContent='dados locais';
+
+  // Demo: se não tem dados, perguntar
+  if(!allData.length){
+    setTimeout(()=>{
+      if(confirm('Deseja carregar dados de demonstração para explorar o sistema?')){
+        carregarDemo();
+      }
+    },500);
+  }
+})();
+
+function carregarDemo(){
+  const mesesDemo = ['2025-01','2025-02','2025-03','2025-04','2025-05','2025-06','2025-07','2025-08','2025-09','2025-10','2025-11','2025-12','2026-01','2026-02','2026-03'];
+  const vendsDemo = ['Igor','Marcelo', 'Dalgiza'];
+  VENDEDORES = vendsDemo;
+  const filPorVend = {'Igor':'Porto Alegre','Marcelo':'Porto Alegre','Dalgiza':'Mato Grosso do Sul'};
+  allData = [];
+  mesesDemo.forEach(mes=>{
+    vendsDemo.forEach(v=>{
+      const fat = Math.floor((30+Math.random()*100)*1000);
+      const venc = Math.floor(fat*(0.3+Math.random()*0.3));
+      const pag = Math.floor(venc*(0.6+Math.random()*0.38));
+      const rec = Math.floor(fat*(0.5+Math.random()*0.4));
+      const contr = Math.floor(3+Math.random()*20);
+      const valContr = Math.floor((10+Math.random()*80)*1000);
+      allData.push({id:mes+'_'+v+'_demo',mes,vendedor:v,filial:filPorVend[v],contratos:contr,valorContratos:valContr,faturamento:fat,recebimentos:rec,vencimentos:venc,entradas:pag,dataLancamento:mes+'-15',savedAt:new Date().toISOString()});
+    });
+  });
+  salvarStorage();
+  popularSelects();
+  renderHist();
+  toast('Dados de demonstração carregados!','ok');
+}
+</script>
+</body>
+</html>
