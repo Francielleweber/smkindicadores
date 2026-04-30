@@ -685,7 +685,7 @@ function atualizarPreview(){
   ].map(i=>`<div class="prev-item" style="--accent-c:${i.c}"><div class="prev-label">${i.l}</div><div class="prev-val" style="color:${i.c}">${i.v}</div></div>`).join('');
 }
 
-function salvarLancamento(){
+async function salvarLancamento(){
   const mes = document.getElementById('lancMes').value;
   const vendedor = document.getElementById('lancVendedor').value;
   const filial = document.getElementById('lancFilial').value;
@@ -716,7 +716,8 @@ function salvarLancamento(){
   toast(isUpdate ? '🔄 Valores atualizados com sucesso!' : '✓ Lançamento salvo com sucesso!', 'ok');
   document.getElementById('lancMsg').textContent = (isUpdate?'🔄 Atualizado':'✓ Salvo')+' em '+new Date().toLocaleTimeString('pt-BR')+' · '+formatDataBR(dataLancamento);
   atualizarPreview();
-  sincronizarNoSheets();
+  document.getElementById('txtStatus').textContent = 'enviando para Sheets…';
+  await sincronizarNoSheets();
 }
 
 function limparForm(){
@@ -1798,14 +1799,7 @@ function toggleFullscreen(){
   document.getElementById('txtStatus').textContent='dados locais';
   atualizarBtnSheets();
 
-  // Demo: se não tem dados, perguntar
-  if(!allData.length){
-    setTimeout(()=>{
-      if(confirm('Deseja carregar dados de demonstração para explorar o sistema?')){
-        carregarDemo();
-      }
-    },500);
-  }
+
 })();
 
 function carregarDemo(){
