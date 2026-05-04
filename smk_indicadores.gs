@@ -22,17 +22,18 @@ function doGet(e) {
         return jsonResp({ ok: true, dados: [], totalHistorico: 0 });
       }
 
-      const range  = sheet.getRange(1, 1, sheet.getLastRow(), sheet.getLastColumn());
+      const range  = sheet.getRange(1, 1, sheet.getLastRow(), Math.max(sheet.getLastColumn(), COLS.length));
       const values = range.getValues();
-      const header = values[0].map(String);
       const numCols = ['contratos','valorContratos','faturamento',
                        'recebimentos','vencimentos','entradas'];
 
+      // Usa COLS como chaves (independente do cabeçalho real da planilha)
+      // pois os dados estão na mesma ordem das colunas de COLS
       const dados = values.slice(1)
         .filter(row => row.some(c => c !== '' && c !== null))
         .map(row => {
           const obj = {};
-          header.forEach((h, i) => obj[h] = row[i] ?? '');
+          COLS.forEach((h, i) => obj[h] = row[i] ?? '');
           numCols.forEach(k => {
             if (obj[k] !== undefined)
               obj[k] = parseFloat(String(obj[k]).replace(',', '.')) || 0;
