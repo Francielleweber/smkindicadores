@@ -1542,9 +1542,14 @@ async function carregarDoSheets(){
 
   // ── Modo GAS (preferencial) ──────────────────────────────────
   if(gasUrl){
+    if(!gasUrl.startsWith('https://script.google.com')){
+      toast('URL inválida. Deve começar com https://script.google.com','err');
+      return;
+    }
     try{
       toast('Buscando dados do Sheets via Apps Script…','info');
-      const res = await fetch(gasUrl+'?acao=buscar', {method:'GET'});
+      const res = await fetch(gasUrl+'?acao=buscar', {method:'GET', redirect:'follow'});
+      if(!res.ok){ toast('Erro HTTP '+res.status+' ao acessar o Apps Script.','err'); return; }
       const json = await res.json();
       if(!json.ok){toast('Erro GAS: '+(json.erro||'desconhecido'),'err');return;}
       if(!json.dados || !json.dados.length){
@@ -1559,7 +1564,11 @@ async function carregarDoSheets(){
         `sincronizado ${new Date().toLocaleTimeString('pt-BR')} · ${allData.length} reg.`;
       toast('Dados carregados do Google Sheets!','ok');
     }catch(e){
-      toast('Erro ao buscar do Apps Script: '+e.message,'err');
+      if(e.message==='Failed to fetch'){
+        toast('Falha de conexão com o Apps Script. Verifique: URL correta, implantado como "Qualquer pessoa", e faça nova implantação após mudanças.','err');
+      } else {
+        toast('Erro ao buscar do Apps Script: '+e.message,'err');
+      }
     }
     return;
   }
@@ -1607,6 +1616,8 @@ async function sincronizarNoSheets(){
       const payload = { acao:'sincronizar', dados: allData };
       const res = await fetch(gasUrl, {
         method:'POST',
+        redirect:'follow',
+        headers:{'Content-Type':'application/json'},
         body: JSON.stringify(payload)
       });
       const json = await res.json();
