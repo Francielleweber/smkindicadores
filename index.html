@@ -1538,7 +1538,38 @@ function atualizarBtnSheets(){
 }
 
 async function carregarDoSheets(){
+  const gasUrl = localStorage.getItem('smk_gasUrl')||'';
+
+  // ── Modo GAS (preferencial) ──────────────────────────────────
+  if(gasUrl){
+    try{
+      toast('Buscando dados do Sheets via Apps Script…','info');
+      const res = await fetch(gasUrl+'?acao=buscar', {method:'GET'});
+      const json = await res.json();
+      if(!json.ok){toast('Erro GAS: '+(json.erro||'desconhecido'),'err');return;}
+      if(!json.dados || !json.dados.length){
+        toast('Planilha vazia no Sheets.','info');
+        return;
+      }
+      allData = json.dados;
+      salvarStorage();
+      popularSelects();
+      renderHist();
+      document.getElementById('txtStatus').textContent =
+        `sincronizado ${new Date().toLocaleTimeString('pt-BR')} · ${allData.length} reg.`;
+      toast('Dados carregados do Google Sheets!','ok');
+    }catch(e){
+      toast('Erro ao buscar do Apps Script: '+e.message,'err');
+    }
+    return;
+  }
+
+  // ── Modo OAuth direto (fallback) ─────────────────────────────
   const SHEET_ID = localStorage.getItem('smk_gSheetId')||'';
+  if(!sheetsConnected || !SHEET_ID){
+    toast('Configure o Sheets primeiro via 🔗 Sheets.','err');
+    return;
+  }
   try{
     toast('Carregando dados do Sheets…','info');
     const resp = await fetch(
@@ -1559,6 +1590,8 @@ async function carregarDoSheets(){
     salvarStorage();
     popularSelects();
     renderHist();
+    document.getElementById('txtStatus').textContent =
+      `sincronizado ${new Date().toLocaleTimeString('pt-BR')} · ${allData.length} reg.`;
     toast('Dados carregados do Google Sheets!','ok');
   }catch(e){
     toast('Erro ao carregar do Sheets: '+e.message,'err');
@@ -1692,6 +1725,16 @@ function limparCache(){
   renderHist();
   document.getElementById('txtStatus').textContent='cache limpo';
   toast('Cache local limpo com sucesso.','ok');
+
+  // Se estiver conectado ao Sheets, oferece recarregar imediatamente
+  const gasUrl = localStorage.getItem('smk_gasUrl')||'';
+  if(gasUrl || sheetsConnected){
+    setTimeout(()=>{
+      if(confirm('Deseja buscar os dados do Google Sheets agora?')){
+        carregarDoSheets();
+      }
+    }, 300);
+  }
 }
 
 async function sincronizarRapido(){
@@ -1701,8 +1744,8 @@ async function sincronizarRapido(){
     abrirPainelSheets();
     return;
   }
-  document.getElementById('txtStatus').textContent='sincronizando…';
-  await sincronizarNoSheets();
+  document.getElementById('txtStatus').textContent='buscando do Sheets…';
+  await carregarDoSheets();
 }
 
 function fecharConfig(){document.getElementById('modalConfig').style.display='none';}
